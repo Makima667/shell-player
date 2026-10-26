@@ -70,6 +70,13 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+      - name: 打包失败时输出错误
+        if: failure()
+        shell: bash
+        run: |
+          # 重跑一次打包（编译有缓存，很快），把关键报错写成注解，不用下载完整日志也能看到原因
+          npx tauri build ${{ matrix.args }} 2>&1 | tee bundle.log || true
+          grep -iE "error|warning|failed|abort|!include|invalid" bundle.log | grep -v "^\s*Compiling" | tail -40 | while IFS= read -r l; do echo "::error::$l"; done
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.name }}
