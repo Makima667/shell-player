@@ -59,11 +59,6 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser",
-        "languages": [
-          "SimplifiedChinese",
-          "English"
-        ],
-        "displayLanguageSelector": false,
         "installerIcon": "icons/icon.ico"
       }
     }
