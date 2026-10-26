@@ -55,7 +55,7 @@
     ],
     "publisher": "Makima667",
     "homepage": "https://github.com/Makima667/shell-player",
-    "copyright": "© 2026 Makima667",
+    "copyright": "Copyright (c) 2026 Makima667",
     "windows": {
       "nsis": {
         "installMode": "currentUser",
@@ -64,8 +64,7 @@
           "English"
         ],
         "displayLanguageSelector": false,
-        "installerIcon": "icons/icon.ico",
-        "installerHooks": "installer-hooks.nsh"
+        "installerIcon": "icons/icon.ico"
       }
     }
   }
