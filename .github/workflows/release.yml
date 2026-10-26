@@ -50,11 +50,16 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
+      # PR 上只打包验证，不碰 Release
+      - name: 打包（PR 验证）
+        if: github.event_name == 'pull_request'
+        run: npx tauri build ${{ matrix.args }}
       - uses: tauri-apps/tauri-action@v0
+        if: github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.event_name == 'pull_request' && '' || (github.ref_type == 'tag' && github.ref_name || 'v__VERSION__') }}
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
           releaseName: '空壳播放器 v__VERSION__'
           releaseBody: |
             下载对应系统的一个文件就行：
