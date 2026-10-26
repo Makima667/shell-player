@@ -1,0 +1,119 @@
+name: 打包发布（桌面 + 安卓）
+
+# 推送 v* 标签（例如 v0.1.0）或手动运行。产物会放到一个草稿 Release 里，确认后手动发布
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  desktop:
+    name: 桌面版 ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            platform: windows-latest
+            args: ''
+          - name: macOS
+            platform: macos-latest
+            args: '--target universal-apple-darwin'
+          - name: Linux
+            platform: ubuntu-22.04
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 Linux 依赖
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
+          releaseName: '空壳播放器 v__VERSION__'
+          releaseBody: '桌面版：Windows（.msi / -setup.exe）、macOS（.dmg）、Linux（.AppImage / .deb / .rpm）。安卓版见 .apk。'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  android:
+    name: 安卓版
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: 安装 NDK
+        run: |
+          sdkmanager --install "ndk;27.0.12077973" "platforms;android-34" "build-tools;34.0.0"
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: 生成安卓工程
+        run: |
+          npx tauri android init --ci
+          # 很多音频地址是 http，正式版也需要允许明文流量
+          sed -i 's/manifestPlaceholders\["usesCleartextTraffic"\] = "false"/manifestPlaceholders["usesCleartextTraffic"] = "true"/' src-tauri/gen/android/app/build.gradle.kts
+      - name: 构建 APK
+        run: npx tauri android build --apk --target aarch64 --target armv7 --target x86_64
+      - name: 签名
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name '*-unsigned.apk' | head -1)
+          echo "未签名 APK：$APK"
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > release.jks
+            ALIAS="$KEY_ALIAS"; PASS="$KEYSTORE_PASSWORD"
+          else
+            echo "::warning::没有配置签名密钥，使用临时密钥签名（可以安装测试，但以后无法覆盖升级）"
+            keytool -genkeypair -v -keystore release.jks -alias shellplayer -keyalg RSA -keysize 2048 -validity 10000 -storepass shellplayer -keypass shellplayer -dname "CN=ShellPlayer"
+            ALIAS=shellplayer; PASS=shellplayer
+          fi
+          BT=$ANDROID_SDK_ROOT/build-tools/34.0.0
+          $BT/zipalign -f -p 4 "$APK" aligned.apk
+          $BT/apksigner sign --ks release.jks --ks-key-alias "$ALIAS" --ks-pass pass:"$PASS" --key-pass pass:"$PASS" --out ShellPlayer-android.apk aligned.apk
+          $BT/apksigner verify ShellPlayer-android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ShellPlayer-android.apk
+      - name: 附加到 Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ShellPlayer-android.apk
+          draft: true

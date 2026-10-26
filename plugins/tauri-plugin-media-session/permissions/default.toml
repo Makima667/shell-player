@@ -1,0 +1,5 @@
+"$schema" = "schemas/schema.json"
+
+[default]
+description = "允许前端更新和关闭播放通知"
+permissions = ["allow-update", "allow-stop"]

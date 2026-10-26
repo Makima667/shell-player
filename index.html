@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1117">
+  <title>空壳播放器</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=ZCOOL+QingKe+HuangYou&display=swap">
+</head>
+<body>
+<div class="bg-fx" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div class="app" id="app">
+  <nav class="nav" aria-label="主导航">
+    <div class="logo"><span class="logo-mark" aria-hidden="true"></span><span>空壳</span></div>
+    <div class="nav-group">
+      <button data-view="search" aria-current="true"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><span>搜索</span></button>
+      <button data-view="queue"><svg viewBox="0 0 24 24"><path d="M3 5h14v2H3zm0 6h14v2H3zm0 6h9v2H3zm14-2.5V7h4v2h-2v8.5a2.5 2.5 0 1 1-2-2.45z"/></svg><span>播放列表</span><em class="count mono" id="qCount"></em></button>
+      <button data-view="pl" data-pl="fav"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg><span>我喜欢</span><em class="count mono" id="favCount"></em></button>
+      <button data-view="downloads"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg><span>下载</span></button>
+    </div>
+    <div class="nav-sub">
+      <div class="nav-title"><span>歌单</span><button class="mini-btn" id="newPl" aria-label="新建歌单" title="新建歌单"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg></button></div>
+      <div id="plNav" class="pl-nav"></div>
+    </div>
+    <div class="nav-group nav-bottom">
+      <button data-view="sources"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm12 0h2v3h3v2h-3v3h-2v-3h-3v-2h3z"/></svg><span>音源</span><em class="count mono" id="sCount"></em></button>
+      <button data-view="settings"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>设置</span></button>
+      <button data-view="docs"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zm8 1.5V8h4.5zM8 12h8v2H8zm0 4h8v2H8z"/></svg><span>接入说明</span></button>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <section class="view" data-view="search">
+      <header class="view-head"><h2>搜索</h2><p class="muted small" id="searchHint"></p></header>
+      <form class="search-form" id="searchForm" role="search">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>
+          <input id="kw" type="search" placeholder="歌名、歌手、专辑" autocomplete="off" enterkeyhint="search">
+        </div>
+        <select class="select" id="srcSelect" aria-label="选择音源"></select>
+        <button class="btn primary" type="submit">搜索</button>
+      </form>
+      <div id="results"></div>
+    </section>
+
+    <section class="view" data-view="queue" hidden>
+      <header class="view-head row"><h2 class="grow">播放列表</h2><button class="btn" id="saveQ">存为歌单</button><button class="btn danger" id="clearQ">清空</button></header>
+      <div id="queueList"></div>
+    </section>
+
+    <section class="view" data-view="pl" hidden>
+      <header class="view-head pl-head" id="plHead"></header>
+      <div id="plList"></div>
+    </section>
+
+    <section class="view" data-view="downloads" hidden>
+      <header class="view-head"><h2>下载</h2><p class="muted small" id="dlHint"></p></header>
+      <div id="dlList"></div>
+    </section>
+
+    <section class="view" data-view="sources" hidden>
+      <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn primary" id="addSrc">添加音源</button></header>
+      <div class="sources" id="sourceList"></div>
+      <input type="file" id="localPick" accept="audio/*,.lrc,.flac,.m4a,.ogg,.opus,.wav,.mp3,.ape" multiple hidden>
+      <input type="file" id="localDir" webkitdirectory multiple hidden>
+    </section>
+
+    <section class="view" data-view="settings" hidden>
+      <header class="view-head"><h2>设置</h2></header>
+      <div class="settings" id="settings"></div>
+    </section>
+
+    <section class="view" data-view="docs" hidden>
+      <header class="view-head"><h2>接入说明</h2></header>
+      <div class="doc" id="docBody"></div>
+    </section>
+  </main>
+
+  <section class="full" id="full" aria-label="正在播放" hidden>
+    <div class="full-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="full-top">
+      <button class="icon-btn" id="fullClose" aria-label="收起"><svg viewBox="0 0 24 24"><path d="m12 15.4-6-6L7.4 8l4.6 4.6L16.6 8 18 9.4z"/></svg></button>
+      <div class="full-tabs" role="tablist">
+        <button role="tab" data-ft="disc" aria-selected="true">唱片</button>
+        <button role="tab" data-ft="lyric" aria-selected="false">歌词</button>
+      </div>
+      <span class="icon-btn" aria-hidden="true"></span>
+    </header>
+    <div class="full-body" data-ft="disc">
+      <div class="disc-col">
+        <div class="disc-wrap">
+          <div class="tonearm" aria-hidden="true"></div>
+          <div class="disc" id="disc"><div class="disc-cover" id="discCover"></div></div>
+        </div>
+        <div class="full-meta">
+          <div class="full-title" id="fullTitle"></div>
+          <div class="full-artist" id="fullArtist"></div>
+          <div class="full-acts">
+            <button class="icon-btn heart" data-now="like" aria-label="喜欢"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg></button>
+            <button class="icon-btn" data-now="addto" aria-label="添加到歌单"><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm13 0v-3h2v3h3v2h-3v3h-2v-3h-3v-2z"/></svg></button>
+            <button class="icon-btn" data-now="download" aria-label="下载"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg></button>
+            <button class="icon-btn" data-now="dlyric" aria-label="桌面歌词" hidden><svg viewBox="0 0 24 24"><path d="M3 4h18v12H13l-5 4v-4H3zm4 5v2h10V9z"/></svg></button>
+          </div>
+          <div class="via small" id="fullVia"></div>
+        </div>
+      </div>
+      <div class="lyric-col">
+        <div class="lyrics" id="lyrics"></div>
+      </div>
+    </div>
+    <canvas class="viz" id="viz" aria-hidden="true"></canvas>
+  </section>
+
+  <footer class="bar" aria-label="播放控制">
+    <div class="bar-progress"><input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放进度"><div class="buffered" id="buffered"></div></div>
+    <button class="bar-track" id="barTrack" aria-label="展开正在播放"></button>
+    <div class="ctrls">
+      <button class="icon-btn hide-sm" id="modeBtn" aria-label="播放模式"></button>
+      <button class="icon-btn" id="prevBtn" aria-label="上一首"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zm3.5 7L19 5v14z"/></svg></button>
+      <button class="icon-btn play" id="playBtn" aria-label="播放"><svg viewBox="0 0 24 24"><path class="ic-play" d="M8 5.5v13l11-6.5z"/><path class="ic-pause" d="M6.5 5h4v14h-4zm7 0h4v14h-4z"/></svg><span class="spinner" aria-hidden="true"></span></button>
+      <button class="icon-btn" id="nextBtn" aria-label="下一首"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM5 5l9.5 7L5 19z"/></svg></button>
+      <button class="icon-btn heart hide-sm" id="barLike" aria-label="喜欢"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg></button>
+    </div>
+    <div class="bar-right">
+      <span class="time mono"><span id="tCur">0:00</span> / <span id="tDur">0:00</span></span>
+      <button class="icon-btn" id="lyricBtn" aria-label="歌词"><svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zm2 4h12v2H6zm-2 4h16v2H4zm2 4h12v2H6z"/></svg></button>
+      <button class="icon-btn" id="muteBtn" aria-label="静音"><svg viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
+      <input type="range" class="vol" id="vol" min="0" max="100" value="80" aria-label="音量">
+    </div>
+  </footer>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <header><h3 id="dlgTitle" class="grow"></h3><button class="icon-btn" data-close aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button></header>
+    <div class="body" id="dlgBody"></div>
+    <footer id="dlgFoot"></footer>
+  </div>
+</div>
+
+<div class="menu" id="menu" role="menu" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<audio id="audio" preload="auto"></audio>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
