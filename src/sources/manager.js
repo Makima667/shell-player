@@ -1,7 +1,7 @@
 // 音源管理：保存、编译、启停，以及"取播放地址"的调度（本源 → 洛雪源 → 自动换源）
 import { compileSource } from './compile.js';
 import { pickMatches } from '../core/match.js';
-import { parseDur, uid } from '../core/util.js';
+import { parseDur, uid, withTimeout } from '../core/util.js';
 import { LX_NAMES } from './platforms.js';
 
 export class SourceManager {
@@ -17,6 +17,7 @@ export class SourceManager {
     this.disabled = new Set(store.get('disabled', []));
     this.vars = store.get('sourceVars', {});           // { [id]: { key: value } }
     this.runtime = new Map();                          // id -> adapter | { error }
+    this.urlTimeout = 15000;
   }
 
   save() {
@@ -88,17 +89,28 @@ export class SourceManager {
     };
   }
 
-  async search(ids, keyword, page = 1) {
-    const settled = await Promise.allSettled(ids.map(async id => {
-      const r = await this.runtime.get(id).search(keyword, page);
-      return { id, list: (r.list || []).map(x => this.normTrack(x, id)), hasMore: !!r.hasMore };
-    }));
-    const results = [], errors = [];
+  // 每个音源单独限时，慢的不拖累快的；onPartial 在每个音源返回时回调，界面可以边搜边出
+  async search(ids, keyword, page = 1, { timeout = 15000, onPartial } = {}) {
+    const results = [], errors = [], seen = new Set();
     let hasMore = false;
-    settled.forEach((s, i) => {
-      if (s.status === 'fulfilled') { results.push(...s.value.list); hasMore = hasMore || s.value.hasMore; }
-      else errors.push([ids[i], s.reason?.message || String(s.reason)]);
-    });
+    await Promise.all(ids.map(async id => {
+      try {
+        const r = await withTimeout(Promise.resolve().then(() => this.runtime.get(id).search(keyword, page)), timeout, `超过 ${Math.round(timeout / 1000)} 秒没有响应`);
+        const list = (r?.list || []).map(x => this.normTrack(x, id)).filter(t => {
+          const k = id + '::' + t.id;
+          return seen.has(k) ? false : seen.add(k);
+        });
+        results.push(...list);
+        hasMore = hasMore || !!r?.hasMore;
+        onPartial?.({ id, list });
+      } catch (e) {
+        errors.push([id, e?.message || String(e)]);
+        onPartial?.({ id, error: e?.message || String(e) });
+      }
+    }));
+    // 最终结果按音源顺序排列，保证多次搜索顺序稳定
+    const order = new Map(ids.map((id, i) => [id, i]));
+    results.sort((a, b) => order.get(a.sourceId) - order.get(b.sourceId));
     return { results, errors, hasMore };
   }
 
@@ -110,7 +122,7 @@ export class SourceManager {
       if (!src || !src.canUrl || !this.isOn(id)) return null;
       try {
         onStep?.(src.name);
-        const r = await src.getUrl(t, quality);
+        const r = await withTimeout(Promise.resolve().then(() => src.getUrl(t, quality)), this.urlTimeout, '获取播放地址超时');
         if (r && r.url) return { ...r, via: id, track: t };
         tried.push(`${src.name}：没有返回地址`);
       } catch (e) { tried.push(`${src.name}：${e.message}`); }
@@ -130,7 +142,7 @@ export class SourceManager {
       const kw = `${track.title} ${String(track.artist).split(/[/、,，&]/)[0]}`.trim();
       for (const id of this.searchable().filter(id => id !== track.sourceId)) {
         let list;
-        try { list = (await this.runtime.get(id).search(kw, 1)).list.map(x => this.normTrack(x, id)); }
+        try { list = (await withTimeout(Promise.resolve().then(() => this.runtime.get(id).search(kw, 1)), this.urlTimeout, '搜索超时')).list.map(x => this.normTrack(x, id)); }
         catch (e) { tried.push(`${this.name(id)} 搜索：${e.message}`); continue; }
         for (const cand of pickMatches(track, list).slice(0, 2)) {
           r = (await attempt(id, cand)) || (await viaLx(cand));
@@ -152,7 +164,7 @@ export class SourceManager {
       if (!src || !src.getLyric || !this.isOn(id)) continue;
       const t = id === playedVia?.via && playedVia.track ? playedVia.track : track;
       try {
-        const r = await src.getLyric(t);
+        const r = await withTimeout(Promise.resolve().then(() => src.getLyric(t)), this.urlTimeout, '获取歌词超时');
         if (r && r.lrc) return r;
       } catch { /* 换下一个 */ }
     }

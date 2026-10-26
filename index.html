@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#0f1117">
   <title>空壳播放器</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&family=ZCOOL+QingKe+HuangYou&display=swap">
 </head>
@@ -14,11 +15,13 @@
 
 <div class="app" id="app">
   <nav class="nav" aria-label="主导航">
+    <span class="nav-ind" aria-hidden="true"></span>
     <div class="logo"><span class="logo-mark" aria-hidden="true"></span><span>空壳</span></div>
     <div class="nav-group">
       <button data-view="search" aria-current="true"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><span>搜索</span></button>
       <button data-view="queue"><svg viewBox="0 0 24 24"><path d="M3 5h14v2H3zm0 6h14v2H3zm0 6h9v2H3zm14-2.5V7h4v2h-2v8.5a2.5 2.5 0 1 1-2-2.45z"/></svg><span>播放列表</span><em class="count mono" id="qCount"></em></button>
       <button data-view="pl" data-pl="fav"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg><span>我喜欢</span><em class="count mono" id="favCount"></em></button>
+      <button data-view="history"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 1 1-8.5 12h2.1A7 7 0 1 0 6 9.3L8.7 12H2V5.3l2.6 2.6A9 9 0 0 1 13 3zm-1 5h2v4.6l3.4 2-1 1.7-4.4-2.6z"/></svg><span>最近播放</span></button>
       <button data-view="downloads"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg><span>下载</span></button>
     </div>
     <div class="nav-sub">
@@ -43,17 +46,29 @@
         <select class="select" id="srcSelect" aria-label="选择音源"></select>
         <button class="btn primary" type="submit">搜索</button>
       </form>
+      <div class="search-hist" id="searchHist" hidden></div>
+      <div class="starter" id="starter" hidden></div>
       <div id="results"></div>
     </section>
 
     <section class="view" data-view="queue" hidden>
-      <header class="view-head row"><h2 class="grow">播放列表</h2><button class="btn" id="saveQ">存为歌单</button><button class="btn danger" id="clearQ">清空</button></header>
+      <header class="view-head row"><div class="grow"><h2>播放列表</h2><p class="muted small" id="qMeta"></p></div><button class="btn" id="locateQ">定位当前</button><button class="btn" id="saveQ">存为歌单</button><button class="btn danger" id="clearQ">清空</button></header>
       <div id="queueList"></div>
     </section>
 
     <section class="view" data-view="pl" hidden>
       <header class="view-head pl-head" id="plHead"></header>
       <div id="plList"></div>
+    </section>
+
+    <section class="view" data-view="history" hidden>
+      <header class="view-head"><h2>最近播放</h2></header>
+      <div id="histList"></div>
+    </section>
+
+    <section class="view" data-view="lib" hidden>
+      <header class="view-head"><h2>我的</h2></header>
+      <div id="libBody"></div>
     </section>
 
     <section class="view" data-view="downloads" hidden>
@@ -80,7 +95,7 @@
   </main>
 
   <section class="full" id="full" aria-label="正在播放" hidden>
-    <div class="full-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="full-bg" aria-hidden="true"><div class="full-art" id="fullArt"></div><i></i><i></i><i></i></div>
     <header class="full-top">
       <button class="icon-btn" id="fullClose" aria-label="收起"><svg viewBox="0 0 24 24"><path d="m12 15.4-6-6L7.4 8l4.6 4.6L16.6 8 18 9.4z"/></svg></button>
       <div class="full-tabs" role="tablist">
@@ -100,11 +115,13 @@
           <div class="full-artist" id="fullArtist"></div>
           <div class="full-acts">
             <button class="icon-btn heart" data-now="like" aria-label="喜欢"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg></button>
-            <button class="icon-btn" data-now="addto" aria-label="添加到歌单"><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm13 0v-3h2v3h3v2h-3v3h-2v-3h-3v-2z"/></svg></button>
+            <button class="icon-btn" data-now="addto" aria-label="添加到歌单" data-menu-anchor><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm13 0v-3h2v3h3v2h-3v3h-2v-3h-3v-2z"/></svg></button>
             <button class="icon-btn" data-now="download" aria-label="下载"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg></button>
+            <button class="icon-btn" data-now="sleep" aria-label="定时关闭" data-menu-anchor><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm-1 3h2v4.6l3.4 2-1 1.7L11 12.7z"/></svg></button>
             <button class="icon-btn" data-now="dlyric" aria-label="桌面歌词" hidden><svg viewBox="0 0 24 24"><path d="M3 4h18v12H13l-5 4v-4H3zm4 5v2h10V9z"/></svg></button>
           </div>
           <div class="via small" id="fullVia"></div>
+          <div class="sleep-chip small" id="sleepChip" hidden></div>
         </div>
       </div>
       <div class="lyric-col">
@@ -115,7 +132,7 @@
   </section>
 
   <footer class="bar" aria-label="播放控制">
-    <div class="bar-progress"><input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放进度"><div class="buffered" id="buffered"></div></div>
+    <div class="bar-progress"><input type="range" id="seek" min="0" max="1000" value="0" aria-label="播放进度"><div class="buffered" id="buffered"></div><span class="seek-tip mono" id="seekTip" hidden></span></div>
     <button class="bar-track" id="barTrack" aria-label="展开正在播放"></button>
     <div class="ctrls">
       <button class="icon-btn hide-sm" id="modeBtn" aria-label="播放模式"></button>
@@ -126,12 +143,24 @@
     </div>
     <div class="bar-right">
       <span class="time mono"><span id="tCur">0:00</span> / <span id="tDur">0:00</span></span>
+      <button class="icon-btn" id="sleepBtn" aria-label="定时关闭" data-menu-anchor><svg viewBox="0 0 24 24"><path d="M14.5 2.5A9.5 9.5 0 1 0 21.5 15 7.5 7.5 0 0 1 14.5 2.5z"/></svg></button>
       <button class="icon-btn" id="lyricBtn" aria-label="歌词"><svg viewBox="0 0 24 24"><path d="M4 5h16v2H4zm2 4h12v2H6zm-2 4h16v2H4zm2 4h12v2H6z"/></svg></button>
       <button class="icon-btn" id="muteBtn" aria-label="静音"><svg viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
       <input type="range" class="vol" id="vol" min="0" max="100" value="80" aria-label="音量">
     </div>
   </footer>
+
+  <nav class="tabbar" aria-label="底部导航">
+    <span class="tab-ind" aria-hidden="true"></span>
+    <button data-view="search" aria-current="true"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><span>搜索</span></button>
+    <button data-view="queue"><svg viewBox="0 0 24 24"><path d="M3 5h14v2H3zm0 6h14v2H3zm0 6h9v2H3zm14-2.5V7h4v2h-2v8.5a2.5 2.5 0 1 1-2-2.45z"/></svg><span>播放列表</span></button>
+    <button data-view="lib"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg><span>我的</span></button>
+    <button data-view="sources"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm12 0h2v3h3v2h-3v3h-2v-3h-3v-2h3z"/></svg><span>音源</span></button>
+    <button data-view="settings"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.6 7.6 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1c.5.4 1.1.7 1.7 1L11 21h4l.4-2.7c.6-.3 1.2-.6 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>设置</span></button>
+  </nav>
 </div>
+
+<div class="drop-zone" id="dropZone" hidden><div class="drop-card"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg><b>松开导入</b><span>音频文件 → 本地音乐　·　.js / .json → 音源</span></div></div>
 
 <div class="modal" id="modal" hidden>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">

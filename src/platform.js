@@ -148,3 +148,22 @@ export const nativeMedia = {
     try { await addPluginListener('media-session', 'action', e => cb(e)); } catch (e) { console.warn('[media-session]', e); }
   }
 };
+
+/* ---------- 桌面：托盘 ---------- */
+export const desktopApp = {
+  async closeToTray(on) {
+    if (!isDesktopApp()) return;
+    const { invoke } = await import('@tauri-apps/api/core');
+    try { await invoke('set_close_to_tray', { on }); } catch (e) { console.warn('[tray]', e); }
+  },
+  async tooltip(text) {
+    if (!isDesktopApp()) return;
+    const { invoke } = await import('@tauri-apps/api/core');
+    try { await invoke('set_tray_tooltip', { text }); } catch { /* 忽略 */ }
+  },
+  async onTray(cb) {
+    if (!isDesktopApp()) return;
+    const { listen } = await import('@tauri-apps/api/event');
+    await listen('tray', e => cb(e.payload));
+  }
+};

@@ -157,3 +157,19 @@ test('同一首歌匹配', () => {
   assert.ok(matchScore({ title: '晴天', artist: '周杰伦', duration: 269 }, { title: '晴天（Live版）', artist: '周杰伦/五月天', duration: 270 }) >= 4);
   assert.ok(matchScore({ title: '晴天', artist: '周杰伦' }, { title: '晴天', artist: '孙燕姿' }) < 4);
 });
+
+test('搜索：慢音源超时不拖累其他音源，结果边出边回调并去重', async () => {
+  const slow = { name: '慢', canSearch: true, canUrl: false, search: () => new Promise(() => {}) };
+  const dup = { name: '重复', canSearch: true, canUrl: false, search: async () => ({ list: [{ id: 1, title: 'A' }, { id: 1, title: 'A' }, { id: 2, title: 'B' }] }) };
+  const m = new SourceManager({ store: memStore(), builtins: [['slow', slow], ['dup', dup]] });
+  await m.loadAll();
+  const parts = [];
+  const t0 = Date.now();
+  const r = await m.search(['slow', 'dup'], 'x', 1, { timeout: 300, onPartial: p => parts.push(p) });
+  assert.ok(Date.now() - t0 < 2000);
+  assert.deepEqual(r.results.map(t => t.id), ['1', '2']);
+  assert.equal(r.errors.length, 1);
+  assert.equal(r.errors[0][0], 'slow');
+  assert.equal(parts[0].id, 'dup');
+  assert.equal(parts[1].id, 'slow');
+});
