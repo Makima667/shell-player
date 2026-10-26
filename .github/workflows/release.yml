@@ -33,13 +33,13 @@ jobs:
             args: ''
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: 安装 Linux 依赖
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -74,22 +74,24 @@ jobs:
 
   android:
     name: 安卓版
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 镜像自带 Android SDK
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
       - name: 安装 NDK
         run: |
-          sdkmanager --install "ndk;27.0.12077973" "platforms;android-34" "build-tools;34.0.0"
-          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.12077973" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
@@ -120,7 +122,7 @@ jobs:
             keytool -genkeypair -v -keystore release.jks -alias shellplayer -keyalg RSA -keysize 2048 -validity 10000 -storepass shellplayer -keypass shellplayer -dname "CN=ShellPlayer"
             ALIAS=shellplayer; PASS=shellplayer
           fi
-          BT=$ANDROID_SDK_ROOT/build-tools/34.0.0
+          BT=$ANDROID_HOME/build-tools/34.0.0
           $BT/zipalign -f -p 4 "$APK" aligned.apk
           $BT/apksigner sign --ks release.jks --ks-key-alias "$ALIAS" --ks-pass pass:"$PASS" --key-pass pass:"$PASS" --out ShellPlayer-android.apk aligned.apk
           $BT/apksigner verify ShellPlayer-android.apk
