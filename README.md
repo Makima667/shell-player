@@ -6,6 +6,19 @@
 - 网页版可以直接部署到 Cloudflare Pages
 - 不内置任何第三方平台的音源
 
+## 下载安装
+
+[**Releases 页面**](https://github.com/Makima667/shell-player/releases) 按系统下载一个文件即可：
+
+| 系统 | 文件 | 说明 |
+|---|---|---|
+| Windows | `ShellPlayer_*_x64-setup.exe` | 双击安装，不需要管理员权限，装完桌面和开始菜单都有快捷方式 |
+| macOS | `ShellPlayer_*_universal.dmg` | 拖进「应用程序」；没有苹果签名，首次打开需右键选「打开」 |
+| Linux | `ShellPlayer_*_amd64.AppImage` | `chmod +x` 后直接运行，或用 `.deb` |
+| 安卓 | `ShellPlayer-android.apk` | 需允许安装未知来源应用 |
+
+装好后在「音源」页添加音源才能搜索和播放，接入方式见应用内的「接入说明」。
+
 ## 功能
 
 | | |

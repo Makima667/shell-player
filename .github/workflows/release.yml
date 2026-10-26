@@ -56,7 +56,17 @@ jobs:
         with:
           tagName: ${{ github.event_name == 'pull_request' && '' || (github.ref_type == 'tag' && github.ref_name || 'v__VERSION__') }}
           releaseName: '空壳播放器 v__VERSION__'
-          releaseBody: '桌面版：Windows（.msi / -setup.exe）、macOS（.dmg）、Linux（.AppImage / .deb / .rpm）。安卓版见 .apk。'
+          releaseBody: |
+            下载对应系统的一个文件就行：
+
+            | 系统 | 下载 | 说明 |
+            |---|---|---|
+            | Windows | `ShellPlayer_*_x64-setup.exe` | 双击安装，不需要管理员权限，装完桌面和开始菜单都有快捷方式。首次可能弹 SmartScreen，点「更多信息 → 仍要运行」 |
+            | macOS | `ShellPlayer_*_universal.dmg` | 拖进「应用程序」。没有苹果签名，第一次打开要右键图标选「打开」 |
+            | Linux | `ShellPlayer_*_amd64.AppImage` | `chmod +x` 后直接运行；偏好包管理的用 `.deb` |
+            | 安卓 | `ShellPlayer-android.apk` | 需要允许「安装未知来源应用」。当前为测试签名，以后换正式签名要先卸载 |
+
+            播放器本身不带曲库，装好后在「音源」页添加音源才能搜索和播放，接入方式见应用内的「接入说明」。
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
@@ -64,12 +74,10 @@ jobs:
         with:
           name: desktop-${{ matrix.name }}
           path: |
-            src-tauri/target/**/release/bundle/**/*.msi
             src-tauri/target/**/release/bundle/**/*-setup.exe
             src-tauri/target/**/release/bundle/**/*.dmg
             src-tauri/target/**/release/bundle/**/*.AppImage
             src-tauri/target/**/release/bundle/**/*.deb
-            src-tauri/target/**/release/bundle/**/*.rpm
           if-no-files-found: warn
 
   android:

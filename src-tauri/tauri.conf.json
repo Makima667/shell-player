@@ -27,13 +27,22 @@
       "csp": null,
       "assetProtocol": {
         "enable": true,
-        "scope": ["$DOWNLOAD/ShellPlayer/**", "$APPLOCALDATA/downloads/**"]
+        "scope": [
+          "$DOWNLOAD/ShellPlayer/**",
+          "$APPLOCALDATA/downloads/**"
+        ]
       }
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "nsis",
+      "app",
+      "dmg",
+      "deb",
+      "appimage"
+    ],
     "category": "Music",
     "shortDescription": "可配置音源的音乐播放器",
     "longDescription": "空壳播放器本身不带曲库，通过 MusicFree 插件、洛雪自定义源、JSON 配置或脚本接入音源。",
@@ -43,6 +52,21 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "Makima667",
+    "homepage": "https://github.com/Makima667/shell-player",
+    "copyright": "© 2026 Makima667",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": [
+          "SimplifiedChinese",
+          "English"
+        ],
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico",
+        "installerHooks": "installer-hooks.nsh"
+      }
+    }
   }
 }
