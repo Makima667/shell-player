@@ -1,10 +1,16 @@
 name: 打包发布（桌面 + 安卓）
 
-# 推送 v* 标签（例如 v0.1.0）或手动运行。产物会放到一个草稿 Release 里，确认后手动发布
+# 推送 v* 标签（例如 v0.1.0）或手动运行：产物放到一个草稿 Release 里，确认后手动发布
+# Pull Request：只打包，安装包在本次运行的 Artifacts 里下载，用来验证
 on:
   push:
     tags: ['v*']
+  pull_request:
   workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -48,12 +54,23 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_type == 'tag' && github.ref_name || 'v__VERSION__' }}
+          tagName: ${{ github.event_name == 'pull_request' && '' || (github.ref_type == 'tag' && github.ref_name || 'v__VERSION__') }}
           releaseName: '空壳播放器 v__VERSION__'
           releaseBody: '桌面版：Windows（.msi / -setup.exe）、macOS（.dmg）、Linux（.AppImage / .deb / .rpm）。安卓版见 .apk。'
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}
+          path: |
+            src-tauri/target/**/release/bundle/**/*.msi
+            src-tauri/target/**/release/bundle/**/*-setup.exe
+            src-tauri/target/**/release/bundle/**/*.dmg
+            src-tauri/target/**/release/bundle/**/*.AppImage
+            src-tauri/target/**/release/bundle/**/*.deb
+            src-tauri/target/**/release/bundle/**/*.rpm
+          if-no-files-found: warn
 
   android:
     name: 安卓版
