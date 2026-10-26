@@ -105,7 +105,13 @@ jobs:
           # 很多音频地址是 http，正式版也需要允许明文流量
           sed -i 's/manifestPlaceholders\["usesCleartextTraffic"\] = "false"/manifestPlaceholders["usesCleartextTraffic"] = "true"/' src-tauri/gen/android/app/build.gradle.kts
       - name: 构建 APK
-        run: npx tauri android build --apk --target aarch64 --target armv7 --target x86_64
+        run: |
+          set -o pipefail
+          npx tauri android build --apk --target aarch64 --target armv7 --target x86_64 2>&1 | tee build.log || {
+            # 把关键错误写成注解，方便不打开完整日志也能看到原因
+            grep -E "^e: |error:|ERROR|FAILURE|What went wrong" -A3 build.log | head -60 | while IFS= read -r l; do echo "::error::$l"; done
+            exit 1
+          }
       - name: 签名
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
