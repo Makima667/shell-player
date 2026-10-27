@@ -1,12 +1,18 @@
 name: 打包发布（桌面 + 安卓）
 
-# 推送 v* 标签（例如 v0.1.0）：先清掉同名的旧草稿，建一个新草稿，各平台安装包传完后自动发布
-# Pull Request / 手动运行：只打包，安装包在本次运行的 Artifacts 里下载，用来验证
+# 发版：推送 v* 标签（例如 v0.1.0），或手动运行并填写版本标签。
+#   先清掉同名的旧草稿，建一个新草稿，各平台安装包传完后自动发布（还没有标签时，发布时自动创建）
+# Pull Request / 手动运行不填标签：只打包，安装包在本次运行的 Artifacts 里下载，用来验证
 on:
   push:
     tags: ['v*']
   pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的版本标签，例如 v0.1.0；留空只打包验证'
+        required: false
+        default: ''
 
 concurrency:
   group: release-${{ github.ref }}
@@ -18,14 +24,14 @@ permissions:
 jobs:
   prepare:
     name: 准备 Release
-    if: github.ref_type == 'tag'
+    if: github.ref_type == 'tag' || inputs.tag != ''
     runs-on: ubuntu-latest
     outputs:
       release_id: ${{ steps.create.outputs.id }}
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      TAG: ${{ github.ref_name }}
+      TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
     steps:
       - name: 删除同名的旧草稿
         run: |
@@ -47,7 +53,7 @@ jobs:
 
           播放器本身不带曲库，装好后在「音源」页添加音源才能搜索和播放，接入方式见应用内的「接入说明」。
           BODY
-          id=$(gh api "repos/$REPO/releases" -f tag_name="$TAG" -f name="空壳播放器 $TAG" -F draft=true -F body=@body.md --jq .id)
+          id=$(gh api "repos/$REPO/releases" -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" -f name="空壳播放器 $TAG" -F draft=true -F body=@body.md --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
 
   desktop:
@@ -86,12 +92,12 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
-      # 不是打标签时只打包验证，不碰 Release
+      # 不发版时只打包验证，不碰 Release
       - name: 打包（验证）
-        if: github.ref_type != 'tag'
+        if: needs.prepare.outputs.release_id == ''
         run: npx tauri build ${{ matrix.args }}
       - uses: tauri-apps/tauri-action@v0
-        if: github.ref_type == 'tag'
+        if: needs.prepare.outputs.release_id != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -184,7 +190,7 @@ jobs:
   publish:
     name: 发布 Release
     needs: [prepare, desktop, android]
-    if: github.ref_type == 'tag'
+    if: needs.prepare.outputs.release_id != ''
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
