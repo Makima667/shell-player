@@ -19,6 +19,7 @@ export class SourceManager {
     this.vars = store.get('sourceVars', {});           // { [id]: { key: value } }
     this.runtime = new Map();                          // id -> adapter | { error }
     this.stats = store.get('sourceStats', {});         // { [id]: { ok, fail, ms } }
+    this.lookups = new Map();                          // 本地歌曲在联网音源里对应的歌（借歌词、封面）
     this.urlTimeout = 15000;
   }
 
@@ -207,6 +208,27 @@ export class SourceManager {
     throw new Error(tried.slice(0, 4).join('\n'));
   }
 
+  // 本地 / 已下载的歌没有歌词或封面时，在联网音源里找同一首歌借用。结果按歌缓存
+  lookupOnline(track) {
+    const key = track.sourceId + '::' + track.id;
+    if (!this.lookups.has(key)) {
+      this.lookups.set(key, (async () => {
+        const artist = /^未知/.test(track.artist || '') ? '' : String(track.artist || '');
+        const want = { ...track, artist };
+        const kw = `${track.title} ${artist.split(/[/、,，&]/)[0]}`.trim();
+        for (const id of this.byHealth(this.searchable().filter(id => !this.runtime.get(id).builtin))) {
+          try {
+            const r = await withTimeout(Promise.resolve().then(() => this.runtime.get(id).search(kw, 1)), this.urlTimeout, '搜索超时');
+            const m = pickMatches(want, (r?.list || []).map(x => this.normTrack(x, id)), artist ? 4 : 3)[0];
+            if (m) return m;
+          } catch { /* 换下一个 */ }
+        }
+        return null;
+      })());
+    }
+    return this.lookups.get(key);
+  }
+
   async resolveLyric(track, playedVia) {
     if (track.lyric) return { lrc: track.lyric };
     const order = [track.sourceId, playedVia?.via, ...(track.lxKey ? this.lxProviders(track.lxKey) : [])].filter((v, i, a) => v && a.indexOf(v) === i);
@@ -218,6 +240,14 @@ export class SourceManager {
         const r = await withTimeout(Promise.resolve().then(() => src.getLyric(t)), this.urlTimeout, '获取歌词超时');
         if (r && r.lrc) return r;
       } catch { /* 换下一个 */ }
+    }
+    // 本地歌曲自己没有歌词：用联网音源里的同一首歌的歌词
+    if (this.runtime.get(track.sourceId)?.builtin && track.sourceId !== 'demo') {
+      const m = await this.lookupOnline(track);
+      if (m) {
+        const r = await this.resolveLyric(m, null);
+        if (r.lrc) return { ...r, borrowed: this.name(m.sourceId) };
+      }
     }
     return { lrc: '' };
   }

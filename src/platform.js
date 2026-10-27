@@ -149,6 +149,22 @@ export const nativeMedia = {
   }
 };
 
+// 安卓：悬浮歌词和通知栏滚动歌词。歌词整首交给原生层，由播放服务按进度显示，切到后台也会走
+export const nativeLyric = {
+  available: () => os === 'android',
+  async lines(list) {
+    if (os !== 'android') return;
+    const { invoke } = await import('@tauri-apps/api/core');
+    try { await invoke('plugin:media-session|lyrics', { lines: JSON.stringify(list) }); } catch (e) { console.warn('[lyrics]', e); }
+  },
+  // 返回 { granted }：没有悬浮窗权限时会打开系统设置页
+  async config(cfg) {
+    if (os !== 'android') return { granted: true };
+    const { invoke } = await import('@tauri-apps/api/core');
+    try { return await invoke('plugin:media-session|overlay', cfg); } catch (e) { console.warn('[overlay]', e); return { granted: false }; }
+  }
+};
+
 /* ---------- 桌面：托盘 ---------- */
 export const desktopApp = {
   async closeToTray(on) {

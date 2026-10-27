@@ -25,6 +25,7 @@ serde_json = "1"
 lofty = "0.22"
 base64 = "0.22"
 walkdir = "2"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"

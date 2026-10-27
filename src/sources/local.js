@@ -4,7 +4,7 @@
 const files = new Map(); // id -> { file, lrc, url, title, artist, duration }
 let library = [];        // [{ path, title, artist, album, duration }]
 // 读取本机文件的方法由平台层提供（桌面 / 安卓）
-const hooks = { fileUrl: null, lyric: null };
+const hooks = { fileUrl: null, lyric: null, readTags: null };
 const libTrack = x => ({ id: 'p:' + x.path, path: x.path, title: x.title || '未知歌曲', artist: x.artist || '未知歌手', album: x.album || '', duration: x.duration || 0 });
 const baseName = n => n.replace(/\.[^.]+$/, '');
 const AUDIO_RE = /\.(mp3|flac|m4a|aac|ogg|opus|wav|webm|ape|wma)$/i;
@@ -25,7 +25,7 @@ export const localSource = {
     const k = keyword.trim().toLowerCase();
     const picked = [...files.entries()]
       .filter(([, f]) => !k || (f.title + f.artist + f.file.name).toLowerCase().includes(k))
-      .map(([id, f]) => ({ id, title: f.title, artist: f.artist, album: '本地文件', duration: f.duration || 0 }));
+      .map(([id, f]) => ({ id, title: f.title, artist: f.artist, album: f.album || '本地文件', duration: f.duration || 0, cover: f.cover || '' }));
     const scanned = library.filter(x => !k || (x.title + x.artist + x.album + x.path).toLowerCase().includes(k)).map(libTrack);
     return { list: [...picked, ...scanned], hasMore: false };
   },
@@ -42,13 +42,37 @@ export const localSource = {
   async getLyric(track) {
     if (track.path) return { lrc: hooks.lyric ? await hooks.lyric(track.path) : '' };
     const f = files.get(track.id);
-    return { lrc: f && f.lrc ? await f.lrc.text() : '' };
+    if (!f) return { lrc: '' };
+    return { lrc: f.lrc ? await f.lrc.text() : f.lyric || '' };
+  },
+  // 读取刚导入文件的标签，补全歌名、歌手、封面和内嵌歌词。onProgress(已完成, 总数)
+  async readTags(ids, onProgress) {
+    if (!hooks.readTags) return;
+    const list = ids.filter(id => files.has(id));
+    let done = 0, next = 0;
+    const worker = async () => {
+      while (next < list.length) {
+        const f = files.get(list[next++]);
+        try {
+          const t = await hooks.readTags(f.file);
+          if (t.title) f.title = t.title;
+          if (t.artist) f.artist = t.artist;
+          if (t.album) f.album = t.album;
+          if (t.duration) f.duration = t.duration;
+          if (t.cover) f.cover = t.cover;
+          if (t.lyric) f.lyric = t.lyric;
+        } catch { /* 读不了标签就用文件名 */ }
+        onProgress?.(++done, list.length);
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
   },
   setDuration(id, d) { const f = files.get(id); if (f) f.duration = d; },
+  // 返回新导入的歌曲 id 列表
   import(fileList) {
     const all = [...fileList];
     const lrcs = new Map(all.filter(f => /\.lrc$/i.test(f.name)).map(f => [baseName(f.name).toLowerCase(), f]));
-    let n = 0;
+    const ids = [];
     for (const f of all) {
       if (!(f.type.startsWith('audio/') || AUDIO_RE.test(f.name))) continue;
       const base = baseName(f.name);
@@ -57,8 +81,8 @@ export const localSource = {
       const m = base.match(/^(.+?)\s+-\s+(.+)$/);
       if (m) { artist = m[1].trim(); title = m[2].trim(); }
       files.set(id, { file: f, lrc: lrcs.get(base.toLowerCase()), title, artist });
-      n++;
+      ids.push(id);
     }
-    return n;
+    return ids;
   }
 };

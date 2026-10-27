@@ -177,23 +177,51 @@ pub fn allow_media<R: Runtime>(app: AppHandle<R>, folders: State<'_, Folders>, p
     }
 }
 
-/// 读取内嵌封面，返回 data URL
+/// 读取封面：优先内嵌封面，其次同文件夹里的 cover.jpg / folder.jpg 等。
+/// 传 size 时缩成不超过 size 像素的 JPEG，列表里用小图省内存
 #[tauri::command]
-pub async fn local_cover(folders: State<'_, Folders>, path: String) -> Result<Option<String>, String> {
+pub async fn local_cover(folders: State<'_, Folders>, path: String, size: Option<u32>) -> Result<Option<String>, String> {
     use base64::Engine;
     let p = PathBuf::from(&path);
     if !permitted(&folders, &p) {
         return Ok(None);
     }
     tauri::async_runtime::spawn_blocking(move || {
-        let f = lofty::read_from_path(&p).ok()?;
-        let tag = f.primary_tag().or_else(|| f.first_tag())?;
-        let pic = tag.pictures().first()?;
-        let mime = pic.mime_type().map(|m| m.as_str().to_string()).unwrap_or_else(|| "image/jpeg".into());
-        Some(format!("data:{};base64,{}", mime, base64::engine::general_purpose::STANDARD.encode(pic.data())))
+        let (mut data, mut mime) = embedded_cover(&p).or_else(|| folder_cover(&p))?;
+        if let Some(sz) = size {
+            if let Ok(img) = image::load_from_memory(&data) {
+                if img.width() > sz || img.height() > sz {
+                    let mut out = std::io::Cursor::new(Vec::new());
+                    if img.thumbnail(sz, sz).to_rgb8().write_to(&mut out, image::ImageFormat::Jpeg).is_ok() {
+                        data = out.into_inner();
+                        mime = "image/jpeg".into();
+                    }
+                }
+            }
+        }
+        Some(format!("data:{};base64,{}", mime, base64::engine::general_purpose::STANDARD.encode(data)))
     })
     .await
     .map_err(|e| e.to_string())
+}
+
+fn embedded_cover(p: &Path) -> Option<(Vec<u8>, String)> {
+    let f = lofty::read_from_path(p).ok()?;
+    let tag = f.primary_tag().or_else(|| f.first_tag())?;
+    let pic = tag.pictures().first()?;
+    let mime = pic.mime_type().map(|m| m.as_str().to_string()).unwrap_or_else(|| "image/jpeg".into());
+    Some((pic.data().to_vec(), mime))
+}
+
+fn folder_cover(p: &Path) -> Option<(Vec<u8>, String)> {
+    let dir = p.parent()?;
+    for name in ["cover.jpg", "cover.png", "folder.jpg", "folder.png", "front.jpg", "front.png", "Cover.jpg", "Folder.jpg"] {
+        if let Ok(data) = std::fs::read(dir.join(name)) {
+            let mime = if name.ends_with("png") { "image/png" } else { "image/jpeg" };
+            return Some((data, mime.into()));
+        }
+    }
+    None
 }
 
 /// 歌词：优先同名 .lrc 文件，其次是标签里内嵌的歌词
@@ -203,20 +231,42 @@ pub async fn local_lyric(folders: State<'_, Folders>, path: String) -> Result<St
     if !permitted(&folders, &p) {
         return Ok(String::new());
     }
-    tauri::async_runtime::spawn_blocking(move || {
-        if let Ok(bytes) = std::fs::read(p.with_extension("lrc")) {
-            return String::from_utf8_lossy(&bytes).to_string();
-        }
-        lofty::read_from_path(&p)
-            .ok()
-            .and_then(|f| {
-                let tag = f.primary_tag().or_else(|| f.first_tag())?;
-                tag.get_string(&ItemKey::Lyrics).map(|s| s.to_string())
-            })
-            .unwrap_or_default()
-    })
+    tauri::async_runtime::spawn_blocking(move || lyric_of(&p))
     .await
     .map_err(|e| e.to_string())
+}
+
+fn lyric_of(p: &Path) -> String {
+    if let Ok(bytes) = std::fs::read(p.with_extension("lrc")) {
+        return String::from_utf8_lossy(&bytes).to_string();
+    }
+    lofty::read_from_path(p)
+        .ok()
+        .and_then(|f| {
+            let tag = f.primary_tag().or_else(|| f.first_tag())?;
+            tag.get_string(&ItemKey::Lyrics).map(|s| s.to_string()).or_else(|| {
+                // 有些软件把歌词写在自定义字段里（TXXX:LYRICS、UNSYNCEDLYRICS 之类）
+                tag.items()
+                    .find(|i| matches!(i.key(), ItemKey::Unknown(k) if k.to_uppercase().contains("LYRIC") || k.to_uppercase().contains("USLT")))
+                    .and_then(|i| i.value().text().map(|s| s.to_string()))
+            })
+        })
+        .or_else(|| id3_user_lyrics(p))
+        .unwrap_or_default()
+}
+
+// MP3 里写在 TXXX 自定义字段的歌词（通用标签转换会丢掉这些字段，只能直接读 ID3v2）
+fn id3_user_lyrics(p: &Path) -> Option<String> {
+    use lofty::file::AudioFile;
+    let mut f = std::fs::File::open(p).ok()?;
+    let mf = lofty::mpeg::MpegFile::read_from(&mut f, ParseOptions::new().read_cover_art(false)).ok()?;
+    mf.id3v2()?.into_iter().find_map(|fr| match fr {
+        lofty::id3::v2::Frame::UserText(t) => {
+            let d = t.description.to_uppercase();
+            (d.contains("LYRIC") || d.contains("USLT")).then(|| t.content.to_string())
+        }
+        _ => None,
+    })
 }
 
 #[cfg(test)]
@@ -260,5 +310,18 @@ mod tests {
         assert!(permitted(&folders, &f));
         assert!(!permitted(&folders, &dir.join("..").join("x.mp3")));
         assert!(!permitted(&folders, Path::new("/etc/passwd")));
+    }
+
+    // 内嵌歌词和封面：由 ffmpeg 生成的测试文件（歌词在 TXXX 和 USLT 两种写法里各一份）
+    #[test]
+    fn reads_embedded_lyrics_and_cover() {
+        for name in ["txxx.mp3", "uslt.mp3"] {
+            let f = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/media").join(name);
+            if !f.exists() {
+                continue;
+            }
+            assert!(lyric_of(&f).contains("第二句歌词"), "{name} 没读到歌词");
+            assert!(embedded_cover(&f).is_some(), "{name} 没读到封面");
+        }
     }
 }

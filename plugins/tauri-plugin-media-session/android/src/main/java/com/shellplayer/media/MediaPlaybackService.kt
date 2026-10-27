@@ -7,9 +7,15 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
+import android.util.Base64
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -18,7 +24,8 @@ import androidx.core.app.ServiceCompat
 
 /**
  * 前台服务：保证切到后台、锁屏后进程不被回收，音乐继续播放；
- * 同时提供媒体通知（上一首 / 播放暂停 / 下一首）和系统媒体会话（耳机按键、锁屏、蓝牙）。
+ * 同时提供媒体通知（上一首 / 播放暂停 / 下一首）和系统媒体会话（耳机按键、锁屏、蓝牙、原子随身听这类系统卡片）。
+ * 歌词按播放进度在这里计时，应用切到后台也能继续更新悬浮歌词和通知栏滚动歌词。
  */
 class MediaPlaybackService : Service() {
     companion object {
@@ -31,6 +38,9 @@ class MediaPlaybackService : Service() {
         const val ACTION_PREV = "com.shellplayer.media.PREV"
 
         @Volatile var running = false
+        @Volatile var instance: MediaPlaybackService? = null
+        /** 封面地址（http 或 data:），不走 Intent，避免超出跨进程传输的大小限制 */
+        @Volatile var coverUrl = ""
         var listener: ((String, Double?) -> Unit)? = null
     }
 
@@ -42,6 +52,19 @@ class MediaPlaybackService : Service() {
     private var playing = false
     private var position = 0.0
     private var duration = 0.0
+    private var updatedAt = 0L
+    private var cover: Bitmap? = null
+    private var loadedCover = ""
+    private var tickerText = ""
+    private var lyricIdx = -2
+    private val handler = Handler(Looper.getMainLooper())
+    private var overlay: LyricOverlay? = null
+    private val lyricTick = object : Runnable {
+        override fun run() {
+            syncLyric()
+            if (playing) handler.postDelayed(this, 250)
+        }
+    }
 
     private fun emit(action: String, pos: Double? = null) {
         try { listener?.invoke(action, pos) } catch (_: Exception) { }
@@ -50,6 +73,7 @@ class MediaPlaybackService : Service() {
     override fun onCreate() {
         super.onCreate()
         running = true
+        instance = this
         createChannel()
         session = MediaSessionCompat(this, "ShellPlayer").apply {
             setCallback(object : MediaSessionCompat.Callback() {
@@ -62,6 +86,7 @@ class MediaPlaybackService : Service() {
             })
             isActive = true
         }
+        handler.post { applyLyricConfig() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -73,7 +98,11 @@ class MediaPlaybackService : Service() {
                 playing = intent.getBooleanExtra("playing", false)
                 position = intent.getDoubleExtra("position", 0.0)
                 duration = intent.getDoubleExtra("duration", 0.0)
+                updatedAt = SystemClock.elapsedRealtime()
+                loadCover()
                 refresh()
+                handler.removeCallbacks(lyricTick)
+                handler.post(lyricTick)
             }
             ACTION_TOGGLE -> { emit(if (playing) "pause" else "play"); if (!running) refresh() }
             ACTION_NEXT -> emit("next")
@@ -87,13 +116,82 @@ class MediaPlaybackService : Service() {
         return START_NOT_STICKY
     }
 
+    /* ---------- 封面：后台线程读取，读到后刷新媒体会话和通知 ---------- */
+    private fun loadCover() {
+        val url = coverUrl
+        if (url == loadedCover) return
+        loadedCover = url
+        cover = null
+        if (url.isEmpty()) return
+        Thread {
+            val bmp = try {
+                val bytes = if (url.startsWith("data:")) Base64.decode(url.substringAfter(","), Base64.DEFAULT)
+                else (java.net.URL(url).openConnection() as java.net.HttpURLConnection).run {
+                    connectTimeout = 8000; readTimeout = 8000
+                    setRequestProperty("User-Agent", "Mozilla/5.0")
+                    inputStream.use { it.readBytes() }
+                }
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.let { scale(it) }
+            } catch (_: Exception) { null }
+            handler.post { if (loadedCover == url && bmp != null) { cover = bmp; refresh() } }
+        }.start()
+    }
+
+    private fun scale(b: Bitmap): Bitmap {
+        val max = 512
+        if (b.width <= max && b.height <= max) return b
+        val r = max.toFloat() / maxOf(b.width, b.height)
+        return Bitmap.createScaledBitmap(b, (b.width * r).toInt(), (b.height * r).toInt(), true)
+    }
+
+    /* ---------- 歌词：悬浮歌词 + 通知栏滚动文字 ---------- */
+    fun applyLyricConfig() {
+        if (LyricState.overlayOn) {
+            if (overlay == null) overlay = LyricOverlay(this)
+            overlay?.show()
+            overlay?.apply()
+        } else overlay?.hide()
+        lyricIdx = -2
+        syncLyric()
+    }
+
+    fun lyricsChanged() { lyricIdx = -2; syncLyric() }
+
+    private fun syncLyric() {
+        val pos = position + if (playing) (SystemClock.elapsedRealtime() - updatedAt) / 1000.0 else 0.0
+        val idx = LyricState.indexAt(pos)
+        if (idx == lyricIdx) return
+        lyricIdx = idx
+        val l = LyricState.lines.getOrNull(idx)
+        val text = l?.text?.ifEmpty { "♪" } ?: if (title.isEmpty()) "" else "$title - $artist"
+        overlay?.setText(text, l?.sub ?: "")
+        if (LyricState.ticker && l != null && text != tickerText) {
+            tickerText = text
+            try {
+                val n = buildNotification(text)
+                // 魅族等系统读取这两个标记，在状态栏显示滚动文字
+                n.flags = n.flags or 0x1000000 or 0x2000000
+                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(NOTIFICATION_ID, n)
+            } catch (_: Exception) { }
+        }
+    }
+
     private fun refresh() {
         session.setMetadata(
             MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, title)
                 .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, artist)
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, (duration * 1000).toLong())
+                .apply {
+                    cover?.let {
+                        putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, it)
+                        putBitmap(MediaMetadataCompat.METADATA_KEY_ART, it)
+                        putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, it)
+                    }
+                }
                 .build()
         )
         session.setPlaybackState(
@@ -124,8 +222,10 @@ class MediaPlaybackService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-    private fun buildNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
+    private fun buildNotification(ticker: String? = null) = NotificationCompat.Builder(this, CHANNEL_ID)
         .setSmallIcon(android.R.drawable.ic_media_play)
+        .setLargeIcon(cover)
+        .setTicker(ticker)
         .setContentTitle(title.ifEmpty { "空壳播放器" })
         .setContentText(artist)
         .setSubText(album)
@@ -178,6 +278,9 @@ class MediaPlaybackService : Service() {
 
     override fun onDestroy() {
         running = false
+        instance = null
+        handler.removeCallbacks(lyricTick)
+        overlay?.hide()
         wakeLock?.let { if (it.isHeld) it.release() }
         session.isActive = false
         session.release()

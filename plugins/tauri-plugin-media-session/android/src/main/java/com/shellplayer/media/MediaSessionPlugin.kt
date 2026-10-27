@@ -4,7 +4,9 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.provider.MediaStore
 import android.webkit.WebView
 import androidx.core.app.ActivityCompat
@@ -28,6 +30,22 @@ class UpdateArgs {
     var playing: Boolean = false
     var position: Double = 0.0
     var duration: Double = 0.0
+    var cover: String = ""
+}
+
+@InvokeArg
+class LyricsArgs {
+    /** JSON 数组：[{ t, text, sub }]，时间单位秒，已经算上了歌词时间微调 */
+    var lines: String = "[]"
+}
+
+@InvokeArg
+class OverlayArgs {
+    var show: Boolean = false
+    var locked: Boolean = false
+    var ticker: Boolean = true
+    var size: Double = 17.0
+    var color: Long = 0xFF8AB4FF
 }
 
 @InvokeArg
@@ -58,6 +76,7 @@ class MediaSessionPlugin(private val activity: Activity) : Plugin(activity) {
     fun update(invoke: Invoke) {
         val args = invoke.parseArgs(UpdateArgs::class.java)
         askNotificationPermission()
+        MediaPlaybackService.coverUrl = args.cover
         val intent = Intent(activity, MediaPlaybackService::class.java).apply {
             action = MediaPlaybackService.ACTION_UPDATE
             putExtra("title", args.title)
@@ -91,6 +110,36 @@ class MediaSessionPlugin(private val activity: Activity) : Plugin(activity) {
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1107)
         }
+    }
+
+    /* ---------- 歌词：悬浮歌词和通知栏滚动文字，由播放服务按进度显示 ---------- */
+    @Command
+    fun lyrics(invoke: Invoke) {
+        val args = invoke.parseArgs(LyricsArgs::class.java)
+        LyricState.lines = LyricState.parse(args.lines)
+        activity.runOnUiThread { MediaPlaybackService.instance?.lyricsChanged() }
+        invoke.resolve()
+    }
+
+    @Command
+    fun overlay(invoke: Invoke) {
+        val args = invoke.parseArgs(OverlayArgs::class.java)
+        LyricState.locked = args.locked
+        LyricState.ticker = args.ticker
+        LyricState.size = args.size.toFloat()
+        LyricState.color = args.color.toInt()
+        val ret = JSObject()
+        val granted = Build.VERSION.SDK_INT < 23 || Settings.canDrawOverlays(activity)
+        ret.put("granted", granted)
+        if (args.show && !granted) {
+            // 打开系统的「悬浮窗权限」页面，用户允许后回到应用再开一次
+            try {
+                activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.packageName)))
+            } catch (_: Exception) { }
+        }
+        LyricState.overlayOn = args.show && granted
+        activity.runOnUiThread { MediaPlaybackService.instance?.applyLyricConfig() }
+        invoke.resolve(ret)
     }
 
     /* ---------- 本地音乐：读取系统媒体库 ---------- */

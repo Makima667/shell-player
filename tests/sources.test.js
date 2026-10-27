@@ -203,3 +203,18 @@ test('导入歌单：交给认得链接的音源，结果带上音源 id', async
   assert.equal(r.tracks[0].sourceId, id);
   await assert.rejects(sm.importSheet('https://other.test/1'), /不认识这个链接/);
 });
+
+test('本地歌曲没有歌词时，从联网音源里的同一首歌借歌词', async () => {
+  const local = { name: '本地', builtin: true, canSearch: true, canUrl: true, async search() { return { list: [] }; }, async getUrl() { return { url: 'blob:x' }; }, async getLyric() { return { lrc: '' }; } };
+  const net = { name: '网络', canSearch: true, canUrl: true,
+    async search(kw) { return { list: kw.startsWith('晴天') ? [{ id: 9, title: '晴天', artist: '周杰伦', duration: 269 }] : [] }; },
+    async getUrl() { return { url: 'https://x' }; }, async getLyric(t) { return { lrc: t.id === '9' ? '[00:01.00]故事的小黄花' : '' }; } };
+  const sm = new SourceManager({ store: memStore(), builtins: [['local', local]] });
+  await sm.loadAll();
+  sm.runtime.set('net', { ...net, id: 'net' });
+  const r = await sm.resolveLyric({ id: 'p:/a.mp3', title: '晴天', artist: '未知歌手', duration: 268, sourceId: 'local' });
+  assert.match(r.lrc, /故事的小黄花/);
+  assert.equal(r.borrowed, '网络');
+  const none = await sm.resolveLyric({ id: 'p:/b.mp3', title: '没有这首', artist: '某人', sourceId: 'local' });
+  assert.equal(none.lrc, '');
+});
