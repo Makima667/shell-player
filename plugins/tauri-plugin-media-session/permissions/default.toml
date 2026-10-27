@@ -1,5 +1,5 @@
 "$schema" = "schemas/schema.json"
 
 [default]
-description = "允许前端更新和关闭播放通知"
-permissions = ["allow-update", "allow-stop"]
+description = "允许前端更新和关闭播放通知、读取系统媒体库里的歌曲"
+permissions = ["allow-update", "allow-stop", "allow-scan"]

@@ -101,6 +101,14 @@ export function adaptMusicFree(plugin, { userVars } = {}) {
       return { lrc, trans: r.translation || '' };
     };
   }
+  // 导入歌单：插件识别不了的链接会返回空或抛错，交给下一个插件
+  if (typeof plugin.importMusicSheet === 'function') {
+    src.importSheet = async url => {
+      const r = await plugin.importMusicSheet(url);
+      const list = Array.isArray(r) ? r : (r && (r.musicList || r.data)) || [];
+      return list.map(it => toTrack(it, platform));
+    };
+  }
   return src;
 }
 

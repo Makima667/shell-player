@@ -560,3 +560,42 @@ body.calm .rip, body.calm .burst { display: none; }
   .view-head.row > .grow, .res-head > .grow { flex-basis: 100%; }
   .res-head .btn { flex: 1; justify-content: center; }
 }
+
+/* ================= 第二版：本地音乐、歌词工具、更新 ================= */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.local-acts { margin-bottom: 10px; }
+.folder-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.folder-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 4px 3px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunk); font-size: 12px;
+  animation: rowIn .4s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 30ms); }
+.folder-chip > svg { width: 15px; height: 15px; fill: var(--muted); flex: none; }
+.folder-chip > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
+.spin-ic svg { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 歌词字号 */
+.lyrics[data-size="s"] p { font-size: clamp(15px, 1.35vw, 18px); }
+.lyrics[data-size="l"] p { font-size: clamp(20px, 2.1vw, 28px); }
+@media (max-width: 860px) {
+  .lyrics[data-size="s"] p { font-size: 16px; }
+  .lyrics[data-size="l"] p { font-size: 23px; }
+}
+/* 歌词工具条：鼠标移到歌词上时出现，手机上一直显示 */
+.lyric-col { position: relative; }
+.lyric-tools { position: absolute; right: 8px; bottom: 14px; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 12px;
+  background: rgb(0 0 0 / .28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); opacity: 0; transform: translateY(6px); transition: opacity .25s, transform .25s var(--ease); }
+.lyric-col:hover .lyric-tools, .lyric-tools:focus-within, body.touch .lyric-tools { opacity: 1; transform: none; }
+.lt-btn { border: 0; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 8px; background: none; color: rgb(255 255 255 / .75); font-size: 13px; font-weight: 600; }
+.lt-btn:hover { background: rgb(255 255 255 / .14); color: #fff; }
+.lt-btn.on { background: rgb(255 255 255 / .2); color: #fff; }
+.lt-shift { font-size: 11px; color: rgb(255 255 255 / .7); min-width: 64px; text-align: center; cursor: pointer; }
+
+/* 桌面歌词颜色 */
+.swatches { display: flex; gap: 8px; }
+.swatches button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; background: var(--c); background-clip: padding-box; box-shadow: 0 0 0 1px var(--line); transition: transform .2s var(--ease), border-color .2s; }
+.swatches button:hover { transform: scale(1.1); }
+.swatches button[aria-pressed="true"] { border-color: var(--fg); transform: scale(1.12); }
+
+/* 更新进度 */
+.upd-notes { max-height: 220px; overflow: auto; white-space: pre-wrap; margin: 8px 0; }
+.upd-bar { height: 6px; border-radius: 99px; background: var(--sunk); overflow: hidden; margin-top: 10px; }
+.upd-bar i { display: block; height: 100%; width: var(--p, 0%); background: var(--accent); border-radius: inherit; transition: width .2s; }

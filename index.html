@@ -23,9 +23,10 @@
       <button data-view="pl" data-pl="fav"><svg viewBox="0 0 24 24"><path d="M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z"/></svg><span>我喜欢</span><em class="count mono" id="favCount"></em></button>
       <button data-view="history"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 1 1-8.5 12h2.1A7 7 0 1 0 6 9.3L8.7 12H2V5.3l2.6 2.6A9 9 0 0 1 13 3zm-1 5h2v4.6l3.4 2-1 1.7-4.4-2.6z"/></svg><span>最近播放</span></button>
       <button data-view="downloads"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg><span>下载</span></button>
+      <button data-view="local"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm0 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg><span>本地音乐</span></button>
     </div>
     <div class="nav-sub">
-      <div class="nav-title"><span>歌单</span><button class="mini-btn" id="newPl" aria-label="新建歌单" title="新建歌单"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg></button></div>
+      <div class="nav-title"><span class="grow">歌单</span><button class="mini-btn" id="importPl" aria-label="导入歌单" title="导入歌单（粘贴平台歌单链接）"><svg viewBox="0 0 24 24"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2.1 2.1-1.4-1.4 2.1-2.1a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2.1-2.1 1.4 1.4-2.1 2.1a1 1 0 0 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0z"/></svg></button><button class="mini-btn" id="newPl" aria-label="新建歌单" title="新建歌单"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg></button></div>
       <div id="plNav" class="pl-nav"></div>
     </div>
     <div class="nav-group nav-bottom">
@@ -76,8 +77,13 @@
       <div id="dlList"></div>
     </section>
 
+    <section class="view" data-view="local" hidden>
+      <header class="view-head"><h2>本地音乐</h2><p class="muted small">电脑或手机里的歌曲。桌面版扫描音乐文件夹，安卓读取系统媒体库；同名 .lrc 或内嵌歌词会自动显示。</p></header>
+      <div id="localBody"></div>
+    </section>
+
     <section class="view" data-view="sources" hidden>
-      <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn primary" id="addSrc">添加音源</button></header>
+      <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn" id="updateAll" title="重新下载按网址或订阅导入的音源，有新版本就替换">检查更新</button><button class="btn primary" id="addSrc">添加音源</button></header>
       <div class="sources" id="sourceList"></div>
       <input type="file" id="localPick" accept="audio/*,.lrc,.flac,.m4a,.ogg,.opus,.wav,.mp3,.ape" multiple hidden>
       <input type="file" id="localDir" webkitdirectory multiple hidden>
@@ -125,7 +131,8 @@
         </div>
       </div>
       <div class="lyric-col">
-        <div class="lyrics" id="lyrics"></div>
+        <div class="lyrics" id="lyrics" data-size="m"></div>
+        <div class="lyric-tools" id="lyricTools" hidden></div>
       </div>
     </div>
     <canvas class="viz" id="viz" aria-hidden="true"></canvas>

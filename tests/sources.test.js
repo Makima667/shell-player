@@ -173,3 +173,33 @@ test('搜索：慢音源超时不拖累其他音源，结果边出边回调并�
   assert.equal(parts[0].id, 'dup');
   assert.equal(parts[1].id, 'slow');
 });
+
+test('健康度：记录成功率和耗时，换源时先试表现好的音源', async () => {
+  const mk = (name, fail) => [name, { name, canSearch: true, canUrl: true,
+    async search() { return { list: [{ id: name, title: '晴天', artist: '周杰伦', duration: 269 }] }; },
+    async getUrl() { if (fail) throw new Error('取不到'); return { url: 'https://cdn.test/' + name }; } }];
+  const sm = new SourceManager({ store: memStore(), builtins: [] });
+  // 用户添加的音源走 runtime，这里直接放进去模拟
+  for (const [id, a] of [mk('a', true), mk('b', false), mk('c', false)]) sm.runtime.set(id, { ...a, id });
+  for (let i = 0; i < 5; i++) { sm.record('b', false); sm.record('c', true, 300); }
+  assert.deepEqual(sm.byHealth(['a', 'b', 'c']), ['c', 'a', 'b']);
+  assert.equal(sm.health('c').rate, 1);
+  assert.equal(sm.health('zzz'), null);
+  const r = await sm.resolveUrl({ id: 'x', title: '晴天', artist: '周杰伦', duration: 269, sourceId: 'a' }, '320k');
+  assert.equal(r.via, 'c');
+  assert.equal(r.switched, true);
+  assert.ok(sm.health('a').rate < 1);
+});
+
+test('导入歌单：交给认得链接的音源，结果带上音源 id', async () => {
+  const code = `module.exports = { platform: '测试平台', async search() { return { isEnd: true, data: [] }; },
+    async importMusicSheet(url) { if (!url.includes('sheet.test')) return; return [{ id: 1, title: '晴天', artist: '周杰伦' }, { id: 2, title: '七里香', artist: '周杰伦' }]; } };`;
+  const sm = new SourceManager({ store: memStore(), builtins: [] });
+  const { id } = await sm.add(code);
+  assert.deepEqual(sm.sheetSources(), [id]);
+  const r = await sm.importSheet('https://sheet.test/123');
+  assert.equal(r.tracks.length, 2);
+  assert.equal(r.tracks[1].title, '七里香');
+  assert.equal(r.tracks[0].sourceId, id);
+  await assert.rejects(sm.importSheet('https://other.test/1'), /不认识这个链接/);
+});

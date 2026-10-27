@@ -48,8 +48,9 @@ jobs:
           |---|---|---|
           | Windows | `ShellPlayer_*_x64-setup.exe` | 双击安装，不需要管理员权限；装完开始菜单里有快捷方式，最后一步勾选创建桌面快捷方式即可。首次可能弹 SmartScreen，点「更多信息 → 仍要运行」 |
           | macOS | `ShellPlayer_*_universal.dmg` | 拖进「应用程序」。没有苹果签名，第一次打开要右键图标选「打开」 |
-          | Linux | `ShellPlayer_*_amd64.AppImage` | `chmod +x` 后直接运行；偏好包管理的用 `.deb` |
-          | 安卓 | `ShellPlayer-android.apk` | 需要允许「安装未知来源应用」。当前为测试签名，以后换正式签名要先卸载 |
+          | 安卓 | `ShellPlayer-android.apk` | 需要允许「安装未知来源应用」 |
+
+          桌面版以后会在应用里提示新版本，一键更新；安卓版会提示并打开下载页。
 
           播放器本身不带曲库，装好后在「音源」页添加音源才能搜索和播放，接入方式见应用内的「接入说明」。
           BODY
@@ -68,19 +69,15 @@ jobs:
           - name: macOS
             platform: macos-latest
             args: '--target universal-apple-darwin'
-          - name: Linux
-            platform: ubuntu-22.04
-            args: ''
     needs: prepare
     if: ${{ !failure() && !cancelled() }}
     runs-on: ${{ matrix.platform }}
+    env:
+      # 自动更新包的签名密钥。没配置时照常打包，只是不生成更新包
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v5
-      - name: 安装 Linux 依赖
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -92,6 +89,10 @@ jobs:
         with:
           workspaces: src-tauri
       - run: npm ci
+      - name: 生成自动更新包
+        if: env.TAURI_SIGNING_PRIVATE_KEY != ''
+        shell: bash
+        run: node -e "const f='src-tauri/tauri.conf.json',fs=require('fs'),c=JSON.parse(fs.readFileSync(f));c.bundle.createUpdaterArtifacts=true;fs.writeFileSync(f,JSON.stringify(c,null,2))"
       # 不发版时只打包验证，不碰 Release
       - name: 打包（验证）
         if: needs.prepare.outputs.release_id == ''
@@ -116,8 +117,6 @@ jobs:
           path: |
             src-tauri/target/**/release/bundle/**/*-setup.exe
             src-tauri/target/**/release/bundle/**/*.dmg
-            src-tauri/target/**/release/bundle/**/*.AppImage
-            src-tauri/target/**/release/bundle/**/*.deb
           if-no-files-found: warn
 
   android:

@@ -1,5 +1,5 @@
 // 识别音源格式并编译成统一接口：
-// { kind, name, version, description, canSearch, canUrl, lxKey?, lxKeys?, search(), getUrl() -> {url, headers?}, getLyric?() -> {lrc, trans} }
+// { kind, name, version, description, canSearch, canUrl, lxKey?, lxKeys?, search(), getUrl() -> {url, headers?}, getLyric?() -> {lrc, trans}, importSheet?(url) -> [track] }
 import { compileJson } from './json.js';
 import { compileLx, looksLikeLx } from './lx.js';
 import { runCommonJs, isMusicFreePlugin, adaptMusicFree, isSubscription } from './musicfree.js';
@@ -33,6 +33,10 @@ function adaptNative(obj, code) {
       if (!r) throw new Error('脚本没有返回播放地址');
       return typeof r === 'string' ? { url: r } : r;
     },
+    importSheet: typeof obj.importSheet === 'function' ? async url => {
+      const r = await obj.importSheet(url);
+      return Array.isArray(r) ? r : (r && r.list) || [];
+    } : undefined,
     getLyric: typeof obj.getLyric === 'function' ? async track => {
       const r = await obj.getLyric(track);
       return typeof r === 'string' ? { lrc: r } : { lrc: (r && (r.lrc || r.lyric)) || '', trans: (r && (r.trans || r.tlyric)) || '' };

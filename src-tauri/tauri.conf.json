@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "ShellPlayer",
   "mainBinaryName": "shell-player",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.makima667.shellplayer",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -39,9 +39,7 @@
     "targets": [
       "nsis",
       "app",
-      "dmg",
-      "deb",
-      "appimage"
+      "dmg"
     ],
     "category": "Music",
     "shortDescription": "可配置音源的音乐播放器",
@@ -60,6 +58,18 @@
       "nsis": {
         "installMode": "currentUser",
         "installerIcon": "icons/icon.ico"
+      }
+    },
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE2Q0QwNDY1QjY1MkZGNTIKUldSUy8xSzJaUVROcHU0eUx5UTdFbUIzWlBQSWVrNXdLQUFTUnpnVURUNWU5clJrRDFRTkUvd2IK",
+      "endpoints": [
+        "https://github.com/Makima667/shell-player/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

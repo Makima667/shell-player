@@ -82,6 +82,13 @@ module.exports = {
   // 可选：返回 LRC 文本，或 { lrc, trans }
   async getLyric(track) {
     return await request('https://api.example.com/lrc?id=' + track.id, { type: 'text' })
+  },
+  // 可选：导入歌单。认不出的链接返回空数组，播放器会交给下一个音源
+  async importSheet(url) {
+    const id = (url.match(/playlist\/(\d+)/) || [])[1]
+    if (!id) return []
+    const res = await request('https://api.example.com/playlist?id=' + id)
+    return res.songs.map(s => ({ id: s.id, title: s.name, artist: s.singer }))
   }
 }`
 };
@@ -91,10 +98,10 @@ export const DOC_HTML = () => `
 
 <h3>支持的音源格式</h3>
 <div class="tbl"><table><tr><th>格式</th><th>能做什么</th><th>怎么添加</th></tr>
-<tr><td><b>MusicFree 插件</b></td><td>搜索、播放、歌词，基本是开箱即用</td><td>粘贴插件 .js、填插件网址，或填 MusicFree 订阅地址（一次导入一组）</td></tr>
+<tr><td><b>MusicFree 插件</b></td><td>搜索、播放、歌词，插件带 <code>importMusicSheet</code> 时还能导入歌单</td><td>粘贴插件 .js、填插件网址，或填 MusicFree 订阅地址（一次导入一组）</td></tr>
 <tr><td><b>洛雪（LX Music）自定义源</b></td><td>只负责<b>取播放地址和歌词</b>，不能搜索</td><td>粘贴 .js 或填网址。需要再配一个能搜索对应平台的音源</td></tr>
 <tr><td><b>JSON 配置源</b></td><td>把一个返回 JSON 的接口映射成音源，不用写代码</td><td>点「HTTP API」或「Navidrome」模板修改</td></tr>
-<tr><td><b>空壳脚本源</b></td><td>用 JS 写，适合签名、多步请求</td><td>点「JS 脚本」模板修改</td></tr></table></div>
+<tr><td><b>空壳脚本源</b></td><td>用 JS 写，适合签名、多步请求；可选实现 <code>importSheet</code> 导入歌单</td><td>点「JS 脚本」模板修改</td></tr></table></div>
 
 <h3>洛雪源怎么用</h3>
 <p>洛雪源按平台工作（酷我 kw、酷狗 kg、QQ音乐 tx、网易云 wy、咪咕 mg）。播放器会这样调度：</p>

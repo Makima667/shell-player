@@ -167,3 +167,72 @@ export const desktopApp = {
     await listen('tray', e => cb(e.payload));
   }
 };
+
+/* ---------- 本地音乐 ---------- */
+// 桌面：扫描音乐文件夹（默认系统「音乐」文件夹，可以再添加）；安卓：读取系统媒体库
+const invoke = async (cmd, args) => (await import('@tauri-apps/api/core')).invoke(cmd, args);
+export const localMusic = {
+  available: () => isTauri,
+  usesFolders: () => isDesktopApp(),
+  folders: () => invoke('music_folders'),
+  addFolder: () => invoke('add_music_folder'),
+  removeFolder: path => invoke('remove_music_folder', { path }),
+  async scan(minDuration = 30) {
+    if (os === 'android') {
+      const r = await invoke('plugin:media-session|scan', { minDuration });
+      const list = r.tracks || [];
+      await this.allow(list.map(t => t.path));
+      return list;
+    }
+    return invoke('scan_music', { minDuration });
+  },
+  // 安卓每次启动后要重新允许播放这些路径
+  async allow(paths) { if (os === 'android' && paths.length) await invoke('allow_media', { paths }); },
+  cover: path => invoke('local_cover', { path }).catch(() => null),
+  lyric: path => invoke('local_lyric', { path }).catch(() => '')
+};
+
+/* ---------- 检查更新 ---------- */
+const REPO = 'Makima667/shell-player';
+const verNum = v => String(v || '').replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+export const newerThan = (a, b) => {
+  const x = verNum(a), y = verNum(b);
+  for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+  return false;
+};
+export const appUpdate = {
+  available: () => isTauri,
+  // 返回 { version, notes, install?(onProgress), url? }，没有新版本时返回 null
+  async check(current) {
+    if (isDesktopApp()) {
+      const { check } = await import('@tauri-apps/plugin-updater');
+      const u = await check();
+      if (!u) return null;
+      return {
+        version: u.version, notes: u.body || '',
+        async install(onProgress) {
+          let total = 0, got = 0;
+          await u.downloadAndInstall(e => {
+            if (e.event === 'Started') total = e.data.contentLength || 0;
+            else if (e.event === 'Progress') { got += e.data.chunkLength; onProgress?.(total ? got / total : 0); }
+          });
+          const { relaunch } = await import('@tauri-apps/plugin-process');
+          await relaunch();
+        }
+      };
+    }
+    // 安卓不能自己替换安装包：查 GitHub 上的最新版本，有新的就打开下载页
+    const res = await http(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'ShellPlayer' }, timeout: 15000 });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const r = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+    if (!newerThan(r.tag_name, current)) return null;
+    const apk = (r.assets || []).find(a => /\.apk$/i.test(a.name));
+    return { version: String(r.tag_name).replace(/^v/, ''), notes: r.body || '', url: apk ? apk.browser_download_url : r.html_url };
+  }
+};
+
+export async function openExternal(url) {
+  if (!isTauri) return window.open(url, '_blank', 'noopener');
+  const { openUrl } = await import('@tauri-apps/plugin-opener');
+  await openUrl(url);
+}

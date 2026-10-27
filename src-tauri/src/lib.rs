@@ -1,3 +1,5 @@
+mod local;
+
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{Emitter, Manager};
 
@@ -45,16 +47,31 @@ pub fn run() {
                             - tauri_plugin_window_state::StateFlags::VISIBLE,
                     )
                     .build(),
-            );
+            )
+            .plugin(tauri_plugin_dialog::init())
+            .plugin(tauri_plugin_updater::Builder::new().build())
+            .plugin(tauri_plugin_process::init());
     }
 
     builder
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_media_session::init())
-        .invoke_handler(tauri::generate_handler![set_close_to_tray, set_tray_tooltip])
+        .invoke_handler(tauri::generate_handler![
+            set_close_to_tray,
+            set_tray_tooltip,
+            local::music_folders,
+            local::add_music_folder,
+            local::remove_music_folder,
+            local::scan_music,
+            local::allow_media,
+            local::local_cover,
+            local::local_lyric
+        ])
         .setup(|app| {
+            local::init(app.handle());
             #[cfg(desktop)]
             {
                 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -86,6 +103,7 @@ pub fn run() {
                         &item("prev", "上一首")?,
                         &item("next", "下一首")?,
                         &item("dlyric", "桌面歌词")?,
+                        &item("dlyric-unlock", "解锁桌面歌词")?,
                         &PredefinedMenuItem::separator(app)?,
                         &item("quit", "退出")?,
                     ],

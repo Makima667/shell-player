@@ -1,4 +1,5 @@
 // 音源管理：保存、编译、启停，以及"取播放地址"的调度（本源 → 洛雪源 → 自动换源）
+// 每次搜索、取地址都会记下成功与否和耗时，换源时先试最近表现好的音源
 import { compileSource } from './compile.js';
 import { pickMatches } from '../core/match.js';
 import { parseDur, uid, withTimeout } from '../core/util.js';
@@ -17,7 +18,35 @@ export class SourceManager {
     this.disabled = new Set(store.get('disabled', []));
     this.vars = store.get('sourceVars', {});           // { [id]: { key: value } }
     this.runtime = new Map();                          // id -> adapter | { error }
+    this.stats = store.get('sourceStats', {});         // { [id]: { ok, fail, ms } }
     this.urlTimeout = 15000;
+  }
+
+  /* ---------- 音源健康度 ---------- */
+  record(id, ok, ms) {
+    if (!id || this.runtime.get(id)?.builtin) return;
+    const s = this.stats[id] || (this.stats[id] = { ok: 0, fail: 0, ms: 0 });
+    // 只看最近的表现：次数多了以后旧记录按比例淡出
+    if (s.ok + s.fail >= 40) { s.ok *= 0.8; s.fail *= 0.8; }
+    if (ok) { s.ok++; if (ms != null) s.ms = s.ms ? Math.round(s.ms * 0.7 + ms * 0.3) : Math.round(ms); }
+    else s.fail++;
+    clearTimeout(this.statsTimer);
+    this.statsTimer = setTimeout(() => this.store.set('sourceStats', this.stats), 1500);
+    this.statsTimer.unref?.();
+  }
+  // { rate: 0~1, ms, n }，还没用过时返回 null
+  health(id) {
+    const s = this.stats[id];
+    const n = s ? s.ok + s.fail : 0;
+    return n >= 1 ? { rate: s.ok / n, ms: s.ms, n: Math.round(n) } : null;
+  }
+  // 成功率为主、速度为辅；没有记录的音源按中等水平算
+  score(id) {
+    const s = this.stats[id] || { ok: 0, fail: 0, ms: 0 };
+    return (s.ok + 1) / (s.ok + s.fail + 2) - Math.min(0.25, (s.ms || 0) / 40000);
+  }
+  byHealth(ids) {
+    return ids.map((id, i) => [id, this.score(id), i]).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map(x => x[0]);
   }
 
   save() {
@@ -61,6 +90,7 @@ export class SourceManager {
     this.entries = this.entries.filter(e => e.id !== id);
     this.disabled.delete(id);
     delete this.vars[id];
+    delete this.stats[id];
     this.runtime.delete(id);
     this.save();
   }
@@ -72,7 +102,8 @@ export class SourceManager {
   isOn(id) { const r = this.runtime.get(id); return !!r && !r.error && !this.disabled.has(id); }
   enabled() { return [...this.runtime.keys()].filter(id => this.isOn(id)); }
   searchable() { return this.enabled().filter(id => this.runtime.get(id).canSearch); }
-  lxProviders(key) { return this.enabled().filter(id => (this.runtime.get(id).lxKeys || []).includes(key)); }
+  lxProviders(key) { return this.byHealth(this.enabled().filter(id => (this.runtime.get(id).lxKeys || []).includes(key))); }
+  sheetSources() { return this.enabled().filter(id => typeof this.runtime.get(id).importSheet === 'function'); }
 
   normTrack(raw, sourceId) {
     const src = this.runtime.get(sourceId);
@@ -94,8 +125,10 @@ export class SourceManager {
     const results = [], errors = [], seen = new Set();
     let hasMore = false;
     await Promise.all(ids.map(async id => {
+      const t0 = Date.now();
       try {
         const r = await withTimeout(Promise.resolve().then(() => this.runtime.get(id).search(keyword, page)), timeout, `超过 ${Math.round(timeout / 1000)} 秒没有响应`);
+        this.record(id, true, Date.now() - t0);
         const list = (r?.list || []).map(x => this.normTrack(x, id)).filter(t => {
           const k = id + '::' + t.id;
           return seen.has(k) ? false : seen.add(k);
@@ -104,6 +137,7 @@ export class SourceManager {
         hasMore = hasMore || !!r?.hasMore;
         onPartial?.({ id, list });
       } catch (e) {
+        this.record(id, false);
         errors.push([id, e?.message || String(e)]);
         onPartial?.({ id, error: e?.message || String(e) });
       }
@@ -120,12 +154,14 @@ export class SourceManager {
     const attempt = async (id, t) => {
       const src = this.runtime.get(id);
       if (!src || !src.canUrl || !this.isOn(id)) return null;
+      const t0 = Date.now();
       try {
         onStep?.(src.name);
         const r = await withTimeout(Promise.resolve().then(() => src.getUrl(t, quality)), this.urlTimeout, '获取播放地址超时');
-        if (r && r.url) return { ...r, via: id, track: t };
+        if (r && r.url) { this.record(id, true, Date.now() - t0); return { ...r, via: id, track: t }; }
         tried.push(`${src.name}：没有返回地址`);
       } catch (e) { tried.push(`${src.name}：${e.message}`); }
+      this.record(id, false);
       return null;
     };
     const viaLx = async t => {
@@ -140,7 +176,7 @@ export class SourceManager {
 
     if (failover) {
       const kw = `${track.title} ${String(track.artist).split(/[/、,，&]/)[0]}`.trim();
-      for (const id of this.searchable().filter(id => id !== track.sourceId)) {
+      for (const id of this.byHealth(this.searchable().filter(id => id !== track.sourceId))) {
         let list;
         try { list = (await withTimeout(Promise.resolve().then(() => this.runtime.get(id).search(kw, 1)), this.urlTimeout, '搜索超时')).list.map(x => this.normTrack(x, id)); }
         catch (e) { tried.push(`${this.name(id)} 搜索：${e.message}`); continue; }
@@ -154,6 +190,21 @@ export class SourceManager {
     const err = new Error(tried.slice(0, 4).join('\n'));
     err.tried = tried;
     throw err;
+  }
+
+  // 导入歌单：把链接交给支持导入的音源，第一个认得这个链接的音源给出歌曲列表
+  async importSheet(url, { timeout = 30000 } = {}) {
+    const ids = this.byHealth(this.sheetSources());
+    if (!ids.length) throw new Error('当前启用的音源都不支持导入歌单');
+    const tried = [];
+    for (const id of ids) {
+      try {
+        const list = await withTimeout(Promise.resolve().then(() => this.runtime.get(id).importSheet(url)), timeout, '导入超时');
+        if (Array.isArray(list) && list.length) return { via: id, tracks: list.map(x => this.normTrack(x, id)) };
+        tried.push(`${this.name(id)}：不认识这个链接`);
+      } catch (e) { tried.push(`${this.name(id)}：${e.message}`); }
+    }
+    throw new Error(tried.slice(0, 4).join('\n'));
   }
 
   async resolveLyric(track, playedVia) {

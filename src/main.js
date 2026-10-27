@@ -12,9 +12,9 @@ import { TEMPLATES, DOC_HTML } from './ui/docs.js';
 import { extractColors, Visualizer } from './ui/fx.js';
 import { enableRipple, burst, flyCover, Spinner, moveIndicator, fadeVolume } from './ui/anim.js';
 import { enableReorder, enableSwipe } from './ui/gestures.js';
-import { initPlatform, isTauri, isMobile, isDesktopApp, platformName, downloadTrack, fileSrc, readTextFile, desktopLyrics, nativeMedia, desktopApp } from './platform.js';
+import { initPlatform, isTauri, isMobile, isDesktopApp, platformName, downloadTrack, fileSrc, readTextFile, desktopLyrics, nativeMedia, desktopApp, localMusic, appUpdate, openExternal } from './platform.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const audio = $('#audio');
@@ -40,17 +40,26 @@ const IC = {
   moon: svg('M14.5 2.5A9.5 9.5 0 1 0 21.5 15 7.5 7.5 0 0 1 14.5 2.5z'),
   history: svg('M13 3a9 9 0 1 1-8.5 12h2.1A7 7 0 1 0 6 9.3L8.7 12H2V5.3l2.6 2.6A9 9 0 0 1 13 3zm-1 5h2v4.6l3.4 2-1 1.7-4.4-2.6z'),
   plug: svg('M4 4h7v7H4zm9 0h7v7h-7zM4 13h7v7H4zm12 0h2v3h3v2h-3v3h-2v-3h-3v-2h3z'),
-  doc: svg('M6 2h9l5 5v15H6zm8 1.5V8h4.5zM8 12h8v2H8zm0 4h8v2H8z')
+  doc: svg('M6 2h9l5 5v15H6zm8 1.5V8h4.5zM8 12h8v2H8zm0 4h8v2H8z'),
+  folder: svg('M3 5h7l2 2h9v12H3zm2 4v8h14V9z'),
+  disk: svg('M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18zm0 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z'),
+  link: svg('M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a3 3 0 0 1 4.2 4.2l-2.1 2.1-1.4-1.4 2.1-2.1a1 1 0 0 0-1.4-1.4L12 13.4a1 1 0 0 1-1.4 0zm2.8-2.8a1 1 0 0 1 0 1.4l-3.5 3.5a3 3 0 0 1-4.2-4.2l2.1-2.1 1.4 1.4-2.1 2.1a1 1 0 0 0 1.4 1.4l3.5-3.5a1 1 0 0 1 1.4 0z')
 };
 const MODES = { loop: '列表循环', one: '单曲循环', shuffle: '随机播放' };
 const QUALITIES = [['128k', '标准'], ['320k', '高品'], ['flac', '无损']];
+// 桌面歌词颜色：跟随封面取色，或固定的色相
+const DL_COLORS = [['cover', '跟随封面'], ['200', '青蓝'], ['330', '樱粉'], ['145', '薄荷'], ['42', '琥珀']];
 
 /* ================= 状态 ================= */
 const S = {
   queue: store.get('queue', null),
   cur: store.get('cur', -1),
   mode: store.get('mode', 'loop'),
-  settings: Object.assign({ quality: '320k', failover: true, skipOnError: true, theme: 'system', motion: true, dlyric: false, dlyricLock: false, dlyricSize: 34, closeToTray: true, fade: true }, store.get('settings', {})),
+  settings: Object.assign({
+    quality: '320k', dlQuality: 'same', failover: true, skipOnError: true, theme: 'system', motion: true, fade: true,
+    lyricTrans: true, lyricSize: 'm', dlyric: false, dlyricLock: false, dlyricSize: 34, dlyricColor: 'cover', closeToTray: true,
+    autoUpdateSources: true, autoCheckUpdate: true, localMinDur: 30
+  }, store.get('settings', {})),
   history: store.get('history', []),
   searchHist: store.get('searchHist', []),
   resume: store.get('resume', null),
@@ -59,10 +68,12 @@ const S = {
   view: 'search', plId: 'fav',
   results: [], kw: '', page: 1, hasMore: false, searching: false, searchSel: '*',
   lyric: [], lyricIdx: -1, playedVia: null, token: 0, failStreak: 0, failed: new Set(),
-  plannedNext: -1, prefetch: new Map(), fromCache: false, pendingSeek: null, sleep: null
+  plannedNext: -1, prefetch: new Map(), fromCache: false, pendingSeek: null, sleep: null,
+  localList: [], localShown: 300, lyricShift: store.get('lyricShift', {})
 };
 const keyOf = t => t ? t.sourceId + '::' + t.id : '';
-const lean = t => { const { lyric, ...rest } = t; return rest; };
+// 保存时去掉歌词正文和内嵌封面（本地歌曲的封面是现读的 data URL，体积大）
+const lean = t => { const { lyric, ...rest } = t; if (String(rest.cover || '').startsWith('data:')) delete rest.cover; return rest; };
 const saveQueue = () => { store.set('queue', S.queue.map(lean)); store.set('cur', S.cur); };
 const savePlaylists = () => store.set('playlists', S.playlists);
 const saveSettings = () => store.set('settings', S.settings);
@@ -141,7 +152,7 @@ async function applyColors(t) {
   const r = document.documentElement.style;
   r.setProperty('--h', h1); r.setProperty('--h2', h2); r.setProperty('--h3', h3);
   viz.color = `hsl(${h1} 90% 75% / .8)`;
-  desktopLyrics.send({ hue: h1 });
+  if (S.settings.dlyricColor === 'cover') desktopLyrics.send({ hue: h1 });
 }
 
 /* ================= 歌曲列表 ================= */
@@ -169,6 +180,7 @@ function listFor(ctx) {
   if (ctx === 'q') return S.queue;
   if (ctx === 'p') return playlist(S.plId)?.tracks || [];
   if (ctx === 'h') return S.history;
+  if (ctx === 'l') return S.localList;
   if (ctx === 'd') return S.downloads.map(d => d.path ? { ...d.track, id: d.path, path: d.path, lyricPath: d.lyricPath, sourceId: 'downloaded' } : d.track);
   return [];
 }
@@ -242,7 +254,8 @@ document.addEventListener('click', e => {
   const go = g.dataset.go;
   if (go === 'addsrc') { switchView('sources'); sourceDialog(); }
   else if (go === 'demo') demoSource.search('').then(r => playAll(r.list.map(t => sources.normTrack(t, 'demo'))));
-  else if (go === 'local') { switchView('sources'); $('#localPick').click(); }
+  else if (go === 'local') { if (localMusic.available()) switchView('local'); else { switchView('sources'); $('#localPick').click(); } }
+  else if (go === 'importpl') importSheetDialog();
   else switchView(go, g.dataset.pl);
 });
 document.addEventListener('dblclick', e => {
@@ -451,12 +464,113 @@ function renderLib() {
       ${card('pl', 'fav', IC.heart, '我喜欢', `${fav.tracks.length} 首`, '--c:#ff4d6d')}
       ${card('history', '', IC.history, '最近播放', `${S.history.length} 首`)}
       ${card('downloads', '', IC.dl, '下载', `${S.downloads.length} 首`)}
+      ${card('local', '', IC.disk, '本地音乐', localMusic.available() ? `${localSource.library.length} 首` : '选择文件播放')}
       ${card('docs', '', IC.doc, '接入说明', '怎么添加音源')}
     </div>
-    <div class="row" style="margin-top:8px"><h3 class="grow" style="margin:0;font-size:16px">歌单</h3><button class="btn" id="libNewPl">${IC.add}新建</button></div>
+    <div class="row" style="margin-top:8px"><h3 class="grow" style="margin:0;font-size:16px">歌单</h3><button class="btn" data-go="importpl">${IC.link}导入</button><button class="btn" id="libNewPl">${IC.add}新建</button></div>
     ${S.playlists.filter(p => p.id !== 'fav').map(p => card('pl', p.id, `<span class="pl-dot" style="background:hsl(${hue(p.name)} 60% 55%)"></span>`, p.name, `${p.tracks.length} 首`)).join('') || '<p class="muted small">还没有歌单。在歌曲的「更多」菜单里可以直接新建。</p>'}`;
   $('#libNewPl').onclick = async () => { if (await newPlaylist()) renderLib(); };
 }
+
+/* ================= 本地音乐 ================= */
+// 桌面扫描音乐文件夹，安卓读系统媒体库；扫描结果保存下来，下次打开直接显示
+function setLocalLibrary(list) {
+  const byName = (a, b) => (a.artist || '').localeCompare(b.artist || '', 'zh') || (a.title || '').localeCompare(b.title || '', 'zh');
+  localSource.setLibrary(list.slice().sort(byName));
+  S.localList = localSource.libraryTracks().map(t => sources.normTrack(t, 'local'));
+}
+async function renderLocal() {
+  const box = $('#localBody');
+  if (!localMusic.available()) {
+    box.innerHTML = `<p class="muted small">网页版不能扫描文件夹。可以手动选择音乐文件或整个文件夹，关掉页面后需要重新选择。</p>
+      <div class="row"><button class="btn primary" data-lm="pick">${IC.add}选择文件</button><button class="btn" data-lm="dir">${IC.folder}选择文件夹</button></div>`;
+    return;
+  }
+  const scanned = store.get('localScannedAt', 0);
+  const folders = localMusic.usesFolders() ? await localMusic.folders().catch(() => []) : [];
+  const list = S.localList, shown = list.slice(0, S.localShown);
+  box.innerHTML = `<div class="row local-acts">
+      <button class="btn primary" data-lm="scan" id="lmScan">${IC.loop}${scanned ? '重新扫描' : '开始扫描'}</button>
+      ${localMusic.usesFolders() ? `<button class="btn" data-lm="add">${IC.folder}添加文件夹</button>` : ''}
+      ${list.length ? `<button class="btn" data-lm="play">${IC.play}播放全部</button><button class="btn" data-lm="shuffle">${IC.shuffle}随机播放</button>` : ''}
+    </div>
+    ${localMusic.usesFolders() ? `<div class="folder-list">${folders.map((f, i) => `<span class="folder-chip" style="--i:${i}" title="${esc(f)}">${IC.folder}<span>${esc(f)}</span><button class="mini-btn" data-lm="rm" data-path="${esc(f)}" aria-label="移除文件夹" title="不再扫描这个文件夹">${IC.del}</button></span>`).join('') || '<span class="small muted">还没有音乐文件夹，点「添加文件夹」选一个</span>'}</div>` : ''}
+    <p class="small muted">${list.length ? `${list.length} 首` : '还没有扫描到歌曲'}${scanned ? ` · 上次扫描 ${ago(scanned)}` : ''} · 短于 ${S.settings.localMinDur} 秒的文件会被跳过（可在设置里改）</p>
+    ${list.length ? tracksHTML(shown, 'l') + (list.length > shown.length ? `<div class="row" style="justify-content:center;margin-top:12px"><button class="btn" data-lm="more">再显示 ${Math.min(500, list.length - shown.length)} 首（共 ${list.length} 首）</button></div>` : '')
+      : emptyHTML('♫', isMobile() ? '点「开始扫描」读取手机里的音乐，第一次会请求读取音乐的权限。' : '点「开始扫描」查找音乐文件夹里的歌曲，支持 mp3、flac、m4a、ogg、wav 等格式。')}`;
+}
+async function scanLocal() {
+  const btn = $('#lmScan');
+  if (btn) { btn.disabled = true; btn.innerHTML = `${IC.loop}正在扫描…`; btn.classList.add('spin-ic'); }
+  try {
+    const list = await localMusic.scan(S.settings.localMinDur);
+    store.set('localLib', list); store.set('localScannedAt', Date.now());
+    setLocalLibrary(list);
+    S.localShown = 300;
+    sources.setEnabled('local', true);
+    toast(list.length ? `找到 ${list.length} 首歌` : '没有找到音乐文件', 3000);
+  } catch (e) { toast('扫描失败：' + (e?.message || e), 5000); }
+  if (S.view === 'local') renderLocal();
+}
+$('#localBody').addEventListener('click', async e => {
+  const b = e.target.closest('[data-lm]');
+  if (!b) return;
+  const a = b.dataset.lm;
+  if (a === 'scan') scanLocal();
+  else if (a === 'pick') $('#localPick').click();
+  else if (a === 'dir') $('#localDir').click();
+  else if (a === 'play') playAll(S.localList);
+  else if (a === 'shuffle') { S.mode = 'shuffle'; store.set('mode', S.mode); renderMode(); playAll(S.localList); }
+  else if (a === 'more') { S.localShown += 500; renderLocal(); }
+  else if (a === 'add') {
+    try { const dir = await localMusic.addFolder(); if (dir) { toast('已添加，开始扫描'); await renderLocal(); scanLocal(); } }
+    catch (err) { toast('添加失败：' + (err?.message || err)); }
+  } else if (a === 'rm') {
+    await localMusic.removeFolder(b.dataset.path);
+    const dir = b.dataset.path;
+    const inDir = p => p === dir || p.startsWith(dir + '/') || p.startsWith(dir + '\\');
+    const rest = localSource.library.filter(x => !inDir(x.path));
+    store.set('localLib', rest); setLocalLibrary(rest);
+    renderLocal(); toast('已移除这个文件夹');
+  }
+});
+
+/* ================= 导入歌单 ================= */
+// 粘贴平台歌单链接，交给支持导入的音源（MusicFree 插件的 importMusicSheet）解析
+function importSheetDialog() {
+  const ids = sources.sheetSources();
+  openDialog({
+    title: '导入歌单', narrow: true,
+    body: ids.length
+      ? `<label class="field">歌单链接<input class="input" id="sheetUrl" placeholder="粘贴歌单的分享链接或 id"></label>
+        <label class="field">保存为<input class="input" id="sheetName" placeholder="导入的歌单" maxlength="60"></label>
+        <p class="small muted">能解析链接的音源：${ids.map(id => esc(sources.name(id))).join('、')}。歌曲仍然从这些音源播放。</p>
+        <div class="msg" id="sheetMsg"></div>`
+      : `<p>当前启用的音源都不支持导入歌单。</p><p class="small muted">需要提供歌单导入功能的音源，例如带 <code>importMusicSheet</code> 的 MusicFree 插件。添加后这里就能用了。</p>`,
+    foot: ids.length ? `<button class="btn" data-close>取消</button><button class="btn primary" id="sheetGo">导入</button>` : `<button class="btn" data-close>知道了</button><button class="btn primary" data-close data-go="addsrc">添加音源</button>`
+  });
+  if (!ids.length) return;
+  const msg = (t, cls = 'err') => { const m = $('#sheetMsg'); m.className = 'msg ' + cls; m.textContent = t; };
+  $('#sheetUrl').onkeydown = e => { if (e.key === 'Enter') $('#sheetGo').click(); };
+  $('#sheetGo').onclick = async () => {
+    const url = $('#sheetUrl').value.trim();
+    if (!url) return msg('先粘贴歌单链接');
+    const btn = $('#sheetGo'); btn.disabled = true;
+    msg('正在解析…', 'info');
+    try {
+      const r = await sources.importSheet(url);
+      const pl = { id: 'pl:' + uid(), name: $('#sheetName').value.trim() || `导入的歌单 ${new Date().toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })}`, tracks: [] };
+      const seen = new Set();
+      for (const t of r.tracks) if (!seen.has(keyOf(t))) { seen.add(keyOf(t)); pl.tracks.push(lean(t)); }
+      S.playlists.push(pl);
+      savePlaylists(); renderPlNav();
+      closeDialog();
+      switchView('pl', pl.id);
+      toast(`已从「${sources.name(r.via)}」导入 ${pl.tracks.length} 首`);
+    } catch (e) { msg(e.message); btn.disabled = false; }
+  };
+}
+$('#importPl').addEventListener('click', importSheetDialog);
 
 /* ================= 搜索 ================= */
 function renderSrcSelect() {
@@ -578,7 +692,8 @@ $('#saveQ').addEventListener('click', async () => { if (!S.queue.length) return 
 async function download(t) {
   toast('正在获取下载地址：' + t.title);
   try {
-    const r = await sources.resolveUrl(t, S.settings.quality, { failover: S.settings.failover });
+    const q = S.settings.dlQuality === 'same' ? S.settings.quality : S.settings.dlQuality;
+    const r = await sources.resolveUrl(t, q, { failover: S.settings.failover });
     if (/^(blob|data|asset|https?:\/\/asset\.localhost)/.test(r.url) && t.sourceId !== 'demo') return toast('这首歌已经在本机了');
     let lrc = '';
     try { lrc = (await sources.resolveLyric(t, r)).lrc; } catch { /* 没有歌词也能下载 */ }
@@ -609,17 +724,19 @@ function renderSources() {
   const cards = [...sources.runtime.entries()].filter(([id]) => id !== 'downloaded').map(([id, r], i) => {
     const on = !sources.disabled.has(id);
     let extra = '';
-    if (id === 'local') extra = `<button class="btn" data-sa="pick">选择文件</button><button class="btn" data-sa="dir">选择文件夹</button><span class="small muted">${localSource.count ? `已导入 ${localSource.count} 首` : '也可以把文件拖进窗口'}</span>`;
+    if (id === 'local') extra = (localMusic.available() ? `<button class="btn" data-go="local">${IC.disk}本地音乐</button>` : '') + `<button class="btn" data-sa="pick">选择文件</button><button class="btn" data-sa="dir">选择文件夹</button><span class="small muted">${localSource.count ? `共 ${localSource.count} 首` : '也可以把文件拖进窗口'}</span>`;
     else if (!r.builtin) {
       const entry = sources.entries.find(e => e.id === id);
       extra = (r.userVariables?.length ? `<button class="btn" data-sa="vars">插件设置</button>` : '')
         + (entry?.url ? `<button class="btn" data-sa="update">更新</button>` : '')
         + `<button class="btn" data-sa="edit">编辑</button><button class="btn danger" data-sa="del">删除</button>`;
     }
-    const caps = r.error ? '' : [r.canSearch && '搜索', r.canUrl && '播放', r.getLyric && '歌词'].filter(Boolean).join(' · ');
+    const caps = r.error ? '' : [r.canSearch && '搜索', r.canUrl && '播放', r.getLyric && '歌词', r.importSheet && '导入歌单'].filter(Boolean).join(' · ');
+    const h = !r.builtin && sources.health(id);
+    const healthChip = h ? `<span class="chip ${h.rate >= 0.8 ? 'ok' : h.rate < 0.5 ? 'err' : ''}" title="最近 ${h.n} 次请求">成功率 ${Math.round(h.rate * 100)}%${h.ms ? ` · ${(h.ms / 1000).toFixed(1)} 秒` : ''}</span>` : '';
     return `<div class="src${on ? '' : ' off'}" data-id="${esc(id)}" style="--i:${i}">
       <div class="src-head"><div class="grow"><div class="src-name">${esc(r.name)}</div>
-        <div class="row small" style="margin-top:6px"><span class="chip${r.kind === 'builtin' ? ' accent' : ''}">${KIND[r.kind] || r.kind}</span>${r.version ? `<span class="chip mono">v${esc(r.version)}</span>` : ''}${r.error ? '<span class="chip err">加载失败</span>' : caps ? `<span class="chip">${caps}</span>` : ''}</div></div>
+        <div class="row small" style="margin-top:6px"><span class="chip${r.kind === 'builtin' ? ' accent' : ''}">${KIND[r.kind] || r.kind}</span>${r.version ? `<span class="chip mono">v${esc(r.version)}</span>` : ''}${r.error ? '<span class="chip err">加载失败</span>' : caps ? `<span class="chip">${caps}</span>` : ''}${healthChip}</div></div>
         <label class="switch" title="${on ? '停用' : '启用'}"><input type="checkbox" data-sa="toggle" ${on ? 'checked' : ''} ${r.error ? 'disabled' : ''} aria-label="启用 ${esc(r.name)}"><span></span></label></div>
       <div class="src-desc">${r.error ? `<span style="color:var(--danger)">${esc(r.error)}</span>` : esc(r.description || '没有描述')}${r.author ? `<br>作者：${esc(r.author)}` : ''}</div>
       ${extra ? `<div class="row">${extra}</div>` : ''}</div>`;
@@ -640,6 +757,9 @@ $('#sourceList').addEventListener('click', e => {
   else if (a === 'update') updateSource(id, b);
   else if (a === 'del') {
     if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = '确认删除'; setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = '删除'; } }, 3000); return; }
+    // 来自订阅的音源删掉后，自动更新订阅时不再加回来
+    const url = sources.entries.find(e => e.id === id)?.url;
+    if (url) store.set('subRemoved', [...new Set([...store.get('subRemoved', []), url])]);
     sources.remove(id); renderSources(); toast('已删除音源');
   }
 });
@@ -714,6 +834,8 @@ async function saveSourceCode(code, { id, url, msg }) {
   } catch (e) {
     if (e instanceof SubscriptionError) {
       msg?.('正在导入订阅里的 ' + e.plugins.length + ' 个插件…', 'info');
+      if (url) store.set('subscriptions', [...new Set([...store.get('subscriptions', []), url])]);
+      store.set('subRemoved', store.get('subRemoved', []).filter(u => !e.plugins.some(p => p.url === u)));
       let ok = 0; const fails = [];
       for (const p of e.plugins) {
         try { await sources.add(await fetchText(p.url), { url: p.url }); ok++; }
@@ -726,6 +848,38 @@ async function saveSourceCode(code, { id, url, msg }) {
     throw e;
   }
 }
+// 自动更新：按网址导入的音源和订阅，每天检查一次，有变化才替换
+async function refreshSources({ force = false, quiet = false } = {}) {
+  const checked = store.get('sourceChecked', {}), now = Date.now(), DAY = 86400000;
+  let updated = 0, added = 0, failed = 0;
+  for (const e of sources.entries.filter(e => e.url && (force || now - (checked[e.id] || 0) > DAY))) {
+    try {
+      const code = await fetchText(e.url);
+      checked[e.id] = now;
+      if (code.trim() !== e.code.trim()) { await sources.add(code, { id: e.id, url: e.url }); updated++; }
+    } catch { failed++; }
+  }
+  const removed = new Set(store.get('subRemoved', []));
+  for (const sub of store.get('subscriptions', [])) {
+    if (!force && now - (checked['sub:' + sub] || 0) <= DAY) continue;
+    try {
+      const d = JSON.parse(await fetchText(sub));
+      checked['sub:' + sub] = now;
+      for (const p of d.plugins || []) {
+        if (!p.url || removed.has(p.url) || sources.entries.some(e => e.url === p.url)) continue;
+        try { await sources.add(await fetchText(p.url), { url: p.url }); added++; } catch { failed++; }
+      }
+    } catch { failed++; }
+  }
+  store.set('sourceChecked', checked);
+  if (updated || added) renderSources();
+  if (!quiet || updated || added) toast(updated || added ? `音源已更新：${[updated && `${updated} 个有新版本`, added && `订阅里新增 ${added} 个`].filter(Boolean).join('，')}` : failed ? `检查完成，${failed} 个音源暂时连不上` : '音源都是最新的', 3500);
+}
+$('#updateAll').addEventListener('click', async e => {
+  const b = e.currentTarget; b.disabled = true;
+  await refreshSources({ force: true });
+  b.disabled = false;
+});
 async function updateSource(id, btn) {
   const entry = sources.entries.find(e => e.id === id);
   btn.disabled = true; btn.textContent = '更新中…';
@@ -805,22 +959,30 @@ function renderSettings() {
   const row = (title, desc, ctrl) => `<div class="set-row"><div class="grow"><b>${title}</b><span>${desc}</span></div>${ctrl}</div>`;
   $('#settings').innerHTML = [
     row('首选音质', '音源不支持时会自动降级', seg('quality', QUALITIES)),
+    row('下载音质', '下载时用的音质', seg('dlQuality', [['same', '同上'], ...QUALITIES])),
     row('失败自动换源', '取不到播放地址时，去其他音源搜同名同歌手的歌', sw('failover')),
     row('出错时跳到下一首', '连续失败超过 5 首会停下', sw('skipOnError')),
     row('外观', '深色、浅色或跟随系统', seg('theme', [['system', '跟随系统'], ['light', '浅色'], ['dark', '深色']])),
     row('动态效果', '封面取色的流动背景、律动条、转场和粒子动画', sw('motion')),
     row('淡入淡出', '暂停和继续时音量平滑过渡', sw('fade')),
+    row('显示翻译歌词', '有翻译时显示在原文下面，桌面歌词也一样', sw('lyricTrans')),
+    row('歌词字号', '正在播放页的歌词大小', seg('lyricSize', [['s', '小'], ['m', '中'], ['l', '大']])),
     isDesktopApp() ? row('关闭时最小化到托盘', '点窗口的关闭按钮后继续在后台播放，从托盘图标打开', sw('closeToTray')) : '',
     isDesktopApp() ? row('桌面歌词', '置顶显示的透明歌词窗口，可拖动', sw('dlyric')) : '',
     isDesktopApp() ? row('锁定桌面歌词', '锁定后鼠标可以穿透歌词窗口', sw('dlyricLock')) : '',
     isDesktopApp() ? row('桌面歌词字号', `${st.dlyricSize}px`, `<input type="range" id="dlSize" min="20" max="64" value="${st.dlyricSize}" style="width:140px;--p:${(st.dlyricSize - 20) / 44 * 100}%">`) : '',
+    isDesktopApp() ? row('桌面歌词颜色', '唱过部分的颜色', `<div class="swatches" data-seg="dlyricColor">${DL_COLORS.map(([v, l]) => `<button data-v="${v}" aria-pressed="${st.dlyricColor === v}" title="${l}" style="--c:${v === 'cover' ? 'conic-gradient(hsl(0 90% 70%),hsl(120 90% 70%),hsl(240 90% 70%),hsl(360 90% 70%))' : `hsl(${v} 95% 72%)`}"><span class="sr">${l}</span></button>`).join('')}</div>`) : '',
+    localMusic.available() ? row('本地音乐最短时长', '扫描时跳过更短的文件，避免把提示音和录音扫进来', seg('localMinDur', [[0, '不限'], [30, '30 秒'], [60, '1 分钟']])) : '',
+    row('自动更新音源', '按网址或订阅导入的音源，每天检查一次新版本', sw('autoUpdateSources')),
+    appUpdate.available() ? row('检查新版本', `当前 v${VERSION}${isMobile() ? '。安卓版会打开下载页，下载后覆盖安装' : '。桌面版下载完自动安装并重启'}`, `<div class="row">${sw('autoCheckUpdate')}<button class="btn" id="checkUpd">现在检查</button></div>`) : '',
     !coarse() ? row('快捷键', '空格播放暂停、/ 搜索、L 喜欢……', `<button class="btn" id="showKeys">查看</button>`) : '',
     row('接入说明', '各种音源格式怎么写、怎么添加', `<button class="btn" data-go="docs">打开</button>`),
     row('最近播放', `${S.history.length} 首`, `<button class="btn" data-go="history">查看</button>`),
     row('备份', '导出或导入音源、歌单和设置', `<div class="row"><button class="btn" id="bkExport">导出</button><button class="btn" id="bkImport">导入</button><input type="file" id="bkFile" accept=".json" hidden></div>`),
     row('关于', `空壳播放器 v${VERSION} · ${isTauri ? (isMobile() ? '安卓版' : '桌面版') + '（' + platformName() + '）' : '网页版'}`, '<a class="btn" href="https://github.com/Makima667/shell-player" target="_blank" rel="noopener">源代码</a>')
   ].join('');
-  $$('#settings [data-seg] button').forEach(b => b.onclick = () => { const k = b.closest('[data-seg]').dataset.seg; st[k] = b.dataset.v; saveSettings(); applySettings(); renderSettings(); });
+  $$('#settings [data-seg] button').forEach(b => b.onclick = () => { const k = b.closest('[data-seg]').dataset.seg; st[k] = typeof st[k] === 'number' ? +b.dataset.v : b.dataset.v; saveSettings(); applySettings(); renderSettings(); });
+  $('#checkUpd')?.addEventListener('click', e => checkUpdate({ manual: true, btn: e.currentTarget }));
   $$('#settings [data-sw]').forEach(i => i.onchange = () => { st[i.dataset.sw] = i.checked; saveSettings(); applySettings(); });
   $('#dlSize')?.addEventListener('input', e => { st.dlyricSize = +e.target.value; e.target.style.setProperty('--p', (st.dlyricSize - 20) / 44 * 100 + '%'); e.target.closest('.set-row').querySelector('span').textContent = st.dlyricSize + 'px'; saveSettings(); desktopLyrics.send({ size: st.dlyricSize }); });
   $('#showKeys')?.addEventListener('click', showKeys);
@@ -832,11 +994,15 @@ function applySettings() {
   const st = S.settings;
   if (st.theme === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = st.theme;
   document.body.classList.toggle('calm', !st.motion);
+  $('#lyrics').dataset.size = st.lyricSize;
+  if (S.lyric.length) { renderLyrics(); S.lyricIdx = -2; syncLyric(audio.currentTime); }
   $('#viz').hidden = !st.motion;
   if (isDesktopApp()) {
     desktopApp.closeToTray(st.closeToTray);
     desktopLyrics.show(st.dlyric);
     desktopLyrics.lock(st.dlyricLock);
+    if (st.dlyricColor !== 'cover') desktopLyrics.send({ hue: +st.dlyricColor });
+    else desktopLyrics.send({ hue: getComputedStyle(document.documentElement).getPropertyValue('--h').trim() || 228 });
     $('[data-now="dlyric"]').classList.toggle('on', st.dlyric);
     pushDesktopLyric(true);
   }
@@ -872,7 +1038,7 @@ async function importBackup(e) {
 }
 
 /* ================= 导航 ================= */
-const VIEW_ORDER = ['search', 'queue', 'lib', 'pl', 'history', 'downloads', 'sources', 'settings', 'docs'];
+const VIEW_ORDER = ['search', 'queue', 'lib', 'pl', 'history', 'downloads', 'local', 'sources', 'settings', 'docs'];
 function switchView(view, plId, fromPop) {
   const prev = S.view, prevPl = S.plId;
   if (plId) S.plId = plId;
@@ -883,7 +1049,7 @@ function switchView(view, plId, fromPop) {
   const cur = b => b.dataset.view === view && (view !== 'pl' || b.dataset.pl === S.plId);
   $$('.nav button[data-view]').forEach(b => b.setAttribute('aria-current', String(cur(b))));
   // 手机底部标签：歌单、最近播放、下载、说明都归在「我的」下面
-  const tab = ['pl', 'history', 'downloads', 'docs', 'lib'].includes(view) ? 'lib' : view;
+  const tab = ['pl', 'history', 'downloads', 'local', 'docs', 'lib'].includes(view) ? 'lib' : view;
   $$('.tabbar button').forEach(b => b.setAttribute('aria-current', String(b.dataset.view === tab)));
   $$('.view').forEach(v => {
     const show = v.dataset.view === view;
@@ -896,6 +1062,7 @@ function switchView(view, plId, fromPop) {
   if (view === 'sources') renderSources();
   if (view === 'history') renderHistory();
   if (view === 'lib') renderLib();
+  if (view === 'local') renderLocal();
   if (view === 'queue') requestAnimationFrame(revealPlaying);
   if (!same) $('#main').scrollTop = 0;
   placeIndicator();
@@ -968,11 +1135,39 @@ function renderMode() { const b = $('#modeBtn'); b.innerHTML = IC[S.mode]; b.tit
 function renderLyrics(msg) {
   S.lyricIdx = -1;
   const box = $('#lyrics');
+  renderLyricTools();
   if (!S.lyric.length) { box.innerHTML = `<div class="empty">${esc(msg || '暂无歌词')}</div>`; return; }
-  box.innerHTML = S.lyric.map((l, i) => `<p data-li="${i}">${esc(l.txt) || '♪'}${l.sub ? `<small>${esc(l.sub)}</small>` : ''}</p>`).join('');
+  const trans = S.settings.lyricTrans;
+  box.innerHTML = S.lyric.map((l, i) => `<p data-li="${i}">${esc(l.txt) || '♪'}${l.sub && trans ? `<small>${esc(l.sub)}</small>` : ''}</p>`).join('');
   box.scrollTop = 0;
 }
+// 歌词工具：翻译开关、字号、时间微调（按歌曲记住）
+const lyricShift = () => S.lyricShift[keyOf(curTrack())] || 0;
+function renderLyricTools() {
+  const box = $('#lyricTools');
+  const timed = S.lyric.length && S.lyric[0].t >= 0, hasTrans = S.lyric.some(l => l.sub), sh = lyricShift();
+  box.hidden = !timed;
+  if (!timed) return;
+  box.innerHTML = `${hasTrans ? `<button class="lt-btn${S.settings.lyricTrans ? ' on' : ''}" data-lt="trans" title="显示 / 隐藏翻译">译</button>` : ''}
+    <button class="lt-btn" data-lt="size" title="歌词字号">Aa</button>
+    <button class="lt-btn" data-lt="slow" title="歌词比歌声快：推后 0.5 秒">−</button>
+    <span class="lt-shift mono" title="歌词时间偏移，点一下归零" data-lt="reset">${sh ? (sh > 0 ? '提前 ' : '推后 ') + Math.abs(sh).toFixed(1) + 's' : '对齐'}</span>
+    <button class="lt-btn" data-lt="fast" title="歌词比歌声慢：提前 0.5 秒">+</button>`;
+}
+$('#lyricTools').addEventListener('click', e => {
+  const b = e.target.closest('[data-lt]');
+  if (!b) return;
+  const a = b.dataset.lt, k = keyOf(curTrack());
+  if (a === 'trans') { S.settings.lyricTrans = !S.settings.lyricTrans; saveSettings(); applySettings(); return; }
+  if (a === 'size') { const order = ['s', 'm', 'l']; S.settings.lyricSize = order[(order.indexOf(S.settings.lyricSize) + 1) % 3]; saveSettings(); applySettings(); return; }
+  if (!k) return;
+  const v = a === 'reset' ? 0 : Math.round((lyricShift() + (a === 'fast' ? 0.5 : -0.5)) * 10) / 10;
+  if (v) S.lyricShift[k] = v; else delete S.lyricShift[k];
+  store.set('lyricShift', S.lyricShift);
+  renderLyricTools(); S.lyricIdx = -2; syncLyric(audio.currentTime);
+});
 function syncLyric(t) {
+  t += lyricShift();
   const idx = lineAt(S.lyric, t);
   const box = $('#lyrics');
   if (idx !== S.lyricIdx) {
@@ -1008,7 +1203,7 @@ function pushDesktopLyric(force) {
   const t = curTrack(), l = S.lyric[S.lyricIdx], n = S.lyric[S.lyricIdx + 1];
   desktopLyrics.send({
     text: l ? l.txt : (t ? `${t.title} - ${t.artist}` : '空壳播放器'),
-    sub: l?.sub || '', next: n ? n.txt : '', progress: l ? lyricProgress : 0,
+    sub: (S.settings.lyricTrans && l?.sub) || '', next: n ? n.txt : '', progress: l ? lyricProgress : 0,
     playing: !audio.paused, size: S.settings.dlyricSize, locked: S.settings.dlyricLock
   });
 }
@@ -1061,12 +1256,22 @@ async function playIndex(i, { fresh = false, resumeAt = null } = {}) {
     return;
   }
   updateMediaSession(t);
+  if (t.path && !t.cover && isTauri) loadLocalCover(t, token);
   try {
     const L = await sources.resolveLyric(t, r);
     if (token !== S.token) return;
     S.lyric = mergeTranslation(parseLrc(L.lrc), L.trans);
     renderLyrics(); syncLyric(audio.currentTime);
   } catch { if (token === S.token) { S.lyric = []; renderLyrics('歌词获取失败'); } }
+}
+// 本地歌曲的内嵌封面：播放时才读，读到后刷新唱片、背景和取色
+const coverCache = new Map();
+async function loadLocalCover(t, token) {
+  if (!coverCache.has(t.path)) coverCache.set(t.path, await localMusic.cover(t.path));
+  const c = coverCache.get(t.path);
+  if (!c || token !== S.token) return;
+  t.cover = c;
+  shownKey = null; renderNow(); markPlaying();
 }
 function nextIndex(dir, auto) {
   const n = S.queue.length;
@@ -1361,6 +1566,32 @@ document.addEventListener('keydown', e => {
   else if (e.key === '?') showKeys();
 });
 
+/* ================= 检查更新 ================= */
+async function checkUpdate({ manual = false, btn } = {}) {
+  if (btn) { btn.disabled = true; btn.textContent = '检查中…'; }
+  try {
+    const u = await appUpdate.check(VERSION);
+    const snooze = store.get('updateSnooze', null);
+    if (!u) { if (manual) toast('已经是最新版本 v' + VERSION); return; }
+    if (!manual && snooze && snooze.version === u.version && Date.now() < snooze.until) return;
+    openDialog({
+      title: `发现新版本 v${u.version}`, narrow: true,
+      body: `<p class="small muted">当前 v${VERSION}</p>${u.notes ? `<div class="note small upd-notes">${esc(u.notes.slice(0, 1200))}</div>` : ''}
+        ${u.install ? '<div class="upd-bar" id="updBar" hidden><i></i></div>' : '<p class="small muted">会在浏览器里打开安装包下载，下载完成后点开覆盖安装。</p>'}`,
+      foot: `<button class="btn" id="updLater">以后再说</button><button class="btn primary" id="updGo">${u.install ? '更新并重启' : '去下载'}</button>`
+    });
+    $('#updLater').onclick = () => { store.set('updateSnooze', { version: u.version, until: Date.now() + 3 * 86400000 }); closeDialog(); };
+    $('#updGo').onclick = async () => {
+      if (!u.install) { openExternal(u.url).catch(e => toast('打不开浏览器：' + e.message)); closeDialog(); return; }
+      const go = $('#updGo'), bar = $('#updBar');
+      go.disabled = true; go.textContent = '正在下载…'; $('#updLater').disabled = true; bar.hidden = false;
+      try { await u.install(p => { bar.style.setProperty('--p', Math.round(p * 100) + '%'); go.textContent = `正在下载 ${Math.round(p * 100)}%`; }); }
+      catch (e) { toast('更新失败：' + (e?.message || e), 5000); go.disabled = false; go.textContent = '重试'; $('#updLater').disabled = false; }
+    };
+  } catch (e) { if (manual) toast('检查更新失败：' + (e?.message || e), 4000); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '现在检查'; } }
+}
+
 /* ================= 首次使用 ================= */
 function welcome() {
   openDialog({
@@ -1400,6 +1631,12 @@ async function boot() {
     onUpdateAlert: (id, d) => toast(`「${sources.name(id)}」有新版本${d.log ? '：\n' + String(d.log).slice(0, 120) : ''}`, 6000)
   });
   await sources.loadAll();
+  localSource.setHooks({ fileUrl: fileSrc, lyric: localMusic.lyric });
+  if (localMusic.available()) {
+    const lib = store.get('localLib', []);
+    setLocalLibrary(lib);
+    localMusic.allow(lib.map(x => x.path)).catch(() => {});
+  }
 
   if (!Array.isArray(S.queue)) {
     const { list } = await demoSource.search('');
@@ -1417,7 +1654,7 @@ async function boot() {
       else if (c === 'next') playNext();
       else if (c === 'prev') playPrev();
       else if (c === 'close') { S.settings.dlyric = false; saveSettings(); applySettings(); }
-      else if (c === 'lock') { S.settings.dlyricLock = true; saveSettings(); applySettings(); toast('桌面歌词已锁定，可在设置里解锁'); }
+      else if (c === 'lock') { S.settings.dlyricLock = true; saveSettings(); applySettings(); toast('桌面歌词已锁定，可在托盘菜单或设置里解锁', 4000); }
       else if (c === 'ready') pushDesktopLyric(true);
     });
     desktopApp.onTray(c => {
@@ -1425,6 +1662,7 @@ async function boot() {
       else if (c === 'next') playNext();
       else if (c === 'prev') playPrev();
       else if (c === 'dlyric') { S.settings.dlyric = !S.settings.dlyric; saveSettings(); applySettings(); }
+      else if (c === 'dlyric-unlock') { S.settings.dlyric = true; S.settings.dlyricLock = false; saveSettings(); applySettings(); toast('桌面歌词已解锁'); }
     });
   }
   nativeMedia.onAction(e => { const f = mediaActions[e.action]; if (f) f(e.position); });
@@ -1445,6 +1683,11 @@ async function boot() {
   placeIndicator();
   document.fonts?.ready.then(placeIndicator);
   if (!store.get('welcomed', null)) setTimeout(welcome, 400);
+  // 启动后稍等再做后台检查，不和首屏抢网络
+  setTimeout(() => {
+    if (S.settings.autoUpdateSources && navigator.onLine) refreshSources({ quiet: true });
+    if (S.settings.autoCheckUpdate && appUpdate.available() && navigator.onLine) checkUpdate();
+  }, 8000);
   await doSearch();
 }
 boot().catch(e => { console.error(e); toast('启动出错：' + e.message, 6000); });
