@@ -47,18 +47,16 @@ function drawCover(song) {
   c.width = c.height = 300;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 300, 300);
-  grad.addColorStop(0, `hsl(${song.hue} 70% 58%)`);
-  grad.addColorStop(1, `hsl(${(song.hue + 60) % 360} 65% 32%)`);
+  grad.addColorStop(0, `hsl(${song.hue} 42% 62%)`);
+  grad.addColorStop(1, `hsl(${(song.hue + 50) % 360} 36% 38%)`);
   g.fillStyle = grad;
   g.fillRect(0, 0, 300, 300);
   g.globalAlpha = 0.18;
   g.fillStyle = '#fff';
   for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(150, 150, 22 + i * 16, 0, Math.PI * 2); g.lineWidth = 2; g.strokeStyle = '#fff'; g.stroke(); }
-  g.globalAlpha = 0.95;
-  g.font = '700 64px "Noto Sans SC", sans-serif';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillText(song.title.slice(0, 2), 150, 150);
+  g.globalAlpha = 0.85;
+  g.setTransform(4, 0, 0, 4, 102, 96);
+  g.fill(new Path2D('M10 3h9v4h-6v10.5A3.5 3.5 0 1 1 10 14.3z'));
   return c.toDataURL('image/jpeg', 0.85);
 }
 

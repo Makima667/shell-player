@@ -138,16 +138,16 @@ window.addEventListener('popstate', () => {
 });
 
 /* ================= 封面与取色 ================= */
+// 没有封面时的占位：柔和底色上一个音符
+const NOTE = '<svg class="ph-note" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3h9v4h-6v10.5A3.5 3.5 0 1 1 10 14.3z"/></svg>';
 function coverHTML(t, cls = 'cover') {
   const h = hue((t && (t.album || t.title)) || '空');
-  const ch = ((t && t.title) || '♪').trim().charAt(0);
-  const bg = `background:linear-gradient(135deg,hsl(${h} 55% 50%),hsl(${(h + 50) % 360} 60% 34%))`;
   // 扫描出来的本地歌曲：列表里滚动到时再读小封面
   const thumb = t && !t.cover && t.path && t.sourceId === 'local' && isTauri ? thumbCache.get(t.path) : undefined;
   const src = (t && t.cover) || thumb;
   const img = src ? `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : '';
   const lazy = t && !src && thumb === undefined && t.path && t.sourceId === 'local' && isTauri ? ` data-lc="${esc(t.path)}"` : '';
-  return `<div class="${cls}" style="${bg}"${lazy}>${esc(ch)}${img}</div>`;
+  return `<div class="${cls}" style="--ch:${h}"${lazy}>${NOTE}${img}</div>`;
 }
 const thumbCache = new Map();
 const thumbIO = typeof IntersectionObserver === 'function' && new IntersectionObserver(entries => {
@@ -426,7 +426,7 @@ function renderPlaylist() {
   const first = pl.tracks.find(t => t.cover);
   const dur = pl.tracks.reduce((a, t) => a + (t.duration || 0), 0);
   const isFav = pl.id === 'fav';
-  $('#plHead').innerHTML = `<div class="pl-cover" style="background:linear-gradient(135deg,hsl(${hue(pl.name)} 60% 52%),hsl(${(hue(pl.name) + 60) % 360} 60% 34%))">${first ? `<img src="${esc(first.cover)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : (isFav ? '♥' : '♪')}</div>
+  $('#plHead').innerHTML = `<div class="pl-cover${isFav ? ' fav' : ''}" style="--ch:${hue(pl.name)}">${isFav ? IC.heart.replace('<svg', '<svg class="ph-note"') : NOTE}${first ? `<img src="${esc(first.cover)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div>
     <div class="grow"><div class="kicker">${isFav ? '收藏' : '歌单'}</div><h2>${esc(pl.name)}</h2>
       <p class="muted small">${pl.tracks.length} 首${dur ? ' · ' + Math.round(dur / 60) + ' 分钟' : ''}</p>
       <div class="row" style="margin-top:10px"><button class="btn primary" id="plPlay" ${pl.tracks.length ? '' : 'disabled'}>${IC.play}播放全部</button>${pl.tracks.length > 1 ? shuffleBtn('plShuffle') : ''}
@@ -657,7 +657,7 @@ function renderResults(state = {}) {
     return;
   }
   box.innerHTML = `<div id="resErr"></div><div class="row res-head" style="margin-bottom:4px"><span class="muted small grow" id="resCount"></span>
-    <button class="btn" id="addAllPl" data-menu-anchor>${IC.list}添加到歌单</button>${shuffleBtn('shufAllBtn')}<button class="btn primary" id="playAllBtn">${IC.play}播放全部</button></div>`
+    <button class="btn" id="addAllPl" data-menu-anchor>${IC.list}添加到歌单</button>${shuffleBtn('shufAllBtn')}<button class="btn" id="playAllBtn">${IC.play}播放全部</button></div>`
     + tracksHTML(S.results, 'r') + `<div id="resMore"></div>`;
   $('#playAllBtn').onclick = () => playAll(S.results);
   $('#shufAllBtn').onclick = () => playShuffled(S.results);
@@ -1748,7 +1748,6 @@ async function boot() {
   // 上次听到一半的歌：进度条停在上次的位置，点播放接着听
   const t = curTrack();
   if (S.resume && t && S.resume.key === keyOf(t) && t.duration) { setP(seek, S.resume.t / t.duration); seek.value = Math.round(S.resume.t / t.duration * 1000); $('#tCur').textContent = fmt(S.resume.t); }
-  $$('.main, .bar, .tabbar').forEach(el => el.classList.add('glass'));
   history.replaceState({ root: true }, '');
   placeIndicator();
   document.fonts?.ready.then(placeIndicator);
