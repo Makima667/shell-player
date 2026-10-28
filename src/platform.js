@@ -221,31 +221,48 @@ export const appUpdate = {
   // 返回 { version, notes, install?(onProgress), url? }，没有新版本时返回 null
   async check(current) {
     if (isDesktopApp()) {
-      const { check } = await import('@tauri-apps/plugin-updater');
-      const u = await check();
+      let u;
+      try {
+        const { check } = await import('@tauri-apps/plugin-updater');
+        u = await check();
+      } catch (e) {
+        // 这一版没有发自动更新包（没配签名密钥），退回到查 GitHub、打开下载页
+        const mac = /Mac/i.test(navigator.userAgent);
+        return latestRelease(current, a => mac ? /\.dmg$/i.test(a.name) : /setup\.exe$/i.test(a.name));
+      }
       if (!u) return null;
       return {
         version: u.version, notes: u.body || '',
         async install(onProgress) {
           let total = 0, got = 0;
-          await u.downloadAndInstall(e => {
-            if (e.event === 'Started') total = e.data.contentLength || 0;
-            else if (e.event === 'Progress') { got += e.data.chunkLength; onProgress?.(total ? got / total : 0); }
-          });
+          try {
+            await u.downloadAndInstall(e => {
+              if (e.event === 'Started') total = e.data.contentLength || 0;
+              else if (e.event === 'Progress') { got += e.data.chunkLength; onProgress?.(total ? got / total : 0); }
+            });
+          } catch (e) {
+            // 签名对不上（比如换过密钥）就装不了，改成打开下载页手动装
+            await openExternal(`https://github.com/${REPO}/releases/latest`).catch(() => {});
+            throw new Error('自动更新没成功，已打开下载页，请手动下载安装');
+          }
           const { relaunch } = await import('@tauri-apps/plugin-process');
           await relaunch();
         }
       };
     }
     // 安卓不能自己替换安装包：查 GitHub 上的最新版本，有新的就打开下载页
-    const res = await http(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'ShellPlayer' }, timeout: 15000 });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const r = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
-    if (!newerThan(r.tag_name, current)) return null;
-    const apk = (r.assets || []).find(a => /\.apk$/i.test(a.name));
-    return { version: String(r.tag_name).replace(/^v/, ''), notes: r.body || '', url: apk ? apk.browser_download_url : r.html_url };
+    return latestRelease(current, a => /\.apk$/i.test(a.name));
   }
 };
+
+async function latestRelease(current, pick) {
+  const res = await http(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'ShellPlayer' }, timeout: 15000 });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const r = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+  if (!newerThan(r.tag_name, current)) return null;
+  const file = (r.assets || []).find(pick);
+  return { version: String(r.tag_name).replace(/^v/, ''), notes: r.body || '', url: file ? file.browser_download_url : r.html_url };
+}
 
 export async function openExternal(url) {
   if (!isTauri) return window.open(url, '_blank', 'noopener');
