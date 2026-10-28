@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node scripts/build-index.mjs",
     "validate": "node scripts/validate.mjs",
-    "test": "node --test",
+    "test": "node --test tests/install.test.mjs",
     "install:lx": "node scripts/install.mjs",
     "urls": "node scripts/install.mjs --print-urls"
   },

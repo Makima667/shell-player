@@ -17,7 +17,7 @@ jobs:
       - name: 校验音源与索引
         run: node scripts/validate.mjs
       - name: 安装脚本回归测试
-        run: node --test
+        run: npm test
 
   package:
     needs: validate
