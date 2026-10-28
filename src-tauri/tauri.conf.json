@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ShellPlayer",
+  "mainBinaryName": "shell-player",
+  "version": "0.2.0",
+  "identifier": "com.makima667.shellplayer",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "空壳播放器",
+        "width": 1200,
+        "height": 780,
+        "minWidth": 380,
+        "minHeight": 560,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$DOWNLOAD/ShellPlayer/**",
+          "$APPLOCALDATA/downloads/**"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis",
+      "app",
+      "dmg"
+    ],
+    "category": "Music",
+    "shortDescription": "可配置音源的音乐播放器",
+    "longDescription": "空壳播放器本身不带曲库，通过 MusicFree 插件、洛雪自定义源、JSON 配置或脚本接入音源。",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "Makima667",
+    "homepage": "https://github.com/Makima667/shell-player",
+    "copyright": "Copyright (c) 2026 Makima667",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico"
+      }
+    },
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE2Q0QwNDY1QjY1MkZGNTIKUldSUy8xSzJaUVROcHU0eUx5UTdFbUIzWlBQSWVrNXdLQUFTUnpnVURUNWU5clJrRDFRTkUvd2IK",
+      "endpoints": [
+        "https://github.com/Makima667/shell-player/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

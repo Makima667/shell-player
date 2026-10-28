@@ -1,0 +1,13 @@
+{
+  "name": "空壳播放器",
+  "short_name": "空壳",
+  "description": "可配置音源的音乐播放器",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#17181c",
+  "theme_color": "#17181c",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
