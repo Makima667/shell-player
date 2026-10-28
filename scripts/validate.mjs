@@ -84,7 +84,7 @@ for (const [rel, content] of expected) {
 }
 
 // --- subscription files -----------------------------------------------------
-for (const name of ['plugins.json', 'plugins-fastly.json', 'plugins-raw.json']) {
+for (const name of ['plugins.json', 'plugins-cdn.json', 'plugins-raw.json']) {
   const rel = `sources/musicfree/${name}`;
   if (!fs.existsSync(path.join(ROOT, rel))) { fail(`缺少订阅文件 ${rel}`); continue; }
   const sub = JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));

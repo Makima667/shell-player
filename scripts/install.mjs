@@ -13,7 +13,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  LX_DIR, listFiles, parseLxHeader, deflateScript, inflateScript, sha256, jsdelivr,
+  LX_DIR, listFiles, parseLxHeader, deflateScript, inflateScript, sha256,
+  fastly, jsdelivr, raw,
 } from './lib.mjs';
 
 const args = process.argv.slice(2);
@@ -95,9 +96,12 @@ function buildEntry(file) {
 function main() {
   if (has('--print-urls')) {
     console.log('MusicFree 订阅地址（设置 → 插件管理 → 从网络安装）:');
-    console.log('  ' + jsdelivr('sources/musicfree/plugins.json'));
+    console.log('  ' + fastly('sources/musicfree/plugins.json'));
+    console.log('备用（cdn.jsdelivr.net / raw.githubusercontent.com）:');
+    console.log('  ' + jsdelivr('sources/musicfree/plugins-cdn.json'));
+    console.log('  ' + raw('sources/musicfree/plugins-raw.json'));
     console.log('落雪音源索引:');
-    console.log('  ' + jsdelivr('sources/lx/index.json'));
+    console.log('  ' + fastly('sources/lx/index.json'));
     return;
   }
 

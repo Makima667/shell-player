@@ -92,12 +92,13 @@ export function buildModel() {
   });
 
   const endpoints = {
-    lxIndex: raw('sources/lx/index.json'),
-    lxIndexCdn: jsdelivr('sources/lx/index.json'),
-    musicfreeSubscription: jsdelivr('sources/musicfree/plugins.json'),
-    musicfreeSubscriptionFastly: fastly('sources/musicfree/plugins-fastly.json'),
+    lxIndex: fastly('sources/lx/index.json'),
+    lxIndexRaw: raw('sources/lx/index.json'),
+    // fastly is the default CDN host: measured reachable where cdn.jsdelivr.net timed out.
+    musicfreeSubscription: fastly('sources/musicfree/plugins.json'),
+    musicfreeSubscriptionCdn: jsdelivr('sources/musicfree/plugins-cdn.json'),
     musicfreeSubscriptionRaw: raw('sources/musicfree/plugins-raw.json'),
-    manifest: raw('sources/manifest.json'),
+    manifest: fastly('sources/manifest.json'),
     lxZip: `https://github.com/${OWNER}/${REPO}/releases/download/sources/lx-sources.zip`,
   };
 
@@ -130,8 +131,8 @@ export function buildModel() {
     manifest,
     lxIndex,
     subscriptions: {
-      'plugins.json': subscriptionOf('jsdelivr'),
-      'plugins-fastly.json': subscriptionOf('fastly'),
+      'plugins.json': subscriptionOf('fastly'),
+      'plugins-cdn.json': subscriptionOf('jsdelivr'),
       'plugins-raw.json': subscriptionOf('raw'),
     },
   };

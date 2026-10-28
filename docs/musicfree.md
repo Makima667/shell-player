@@ -5,10 +5,10 @@
 「设置 → 插件管理 → 从网络安装」，粘贴：
 
 ```
-https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json
+https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json
 ```
 
-被墙时换 `plugins-fastly.json` 或 `plugins-raw.json`（同样是本仓库生成的三份等价订阅，只有 CDN 前缀不同）。
+换线路：`plugins-cdn.json`（cdn.jsdelivr.net）、`plugins-raw.json`（raw.githubusercontent.com）。三份文件内容等价，只有 CDN 前缀不同；某条前缀在你的网络下不通就换另一条。默认给 fastly，是因为在构建机上实测 `cdn.jsdelivr.net` 连接超时、`raw.githubusercontent.com` TLS 握手失败，只有 fastly 返回 200。
 
 订阅文件结构就是 MusicFree 官方格式：
 

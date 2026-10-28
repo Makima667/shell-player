@@ -4,7 +4,7 @@
   "repository": "https://github.com/Makima667/shell-player",
   "endpoints": {
     "zip": "https://github.com/Makima667/shell-player/releases/download/sources/lx-sources.zip",
-    "indexJson": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/index.json"
+    "indexJson": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json"
   },
   "sources": [
     {

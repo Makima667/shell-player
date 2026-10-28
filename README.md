@@ -34,13 +34,13 @@ node scripts/install.mjs
 「设置 → 插件管理 → 从网络安装」，粘贴订阅地址：
 
 ```
-https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json
+https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json
 ```
 
-备用线路（jsDelivr 被墙时）：
+备用线路（实测在本机 `cdn.jsdelivr.net` 超时、`raw.githubusercontent.com` TLS 握手失败，fastly 才通；你那边如果反过来就换这两条）：
 
 ```
-https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins-fastly.json
+https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins-cdn.json
 https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins-raw.json
 ```
 
@@ -77,9 +77,9 @@ sources/
   lx/                          落雪音源 .js + index.json
   musicfree/
     plugins/                   MusicFree 插件 .js
-    plugins.json               订阅（jsDelivr）
-    plugins-fastly.json        订阅（fastly）
-    plugins-raw.json           订阅（raw.githubusercontent）
+    plugins.json               订阅（fastly.jsdelivr.net，默认）
+    plugins-cdn.json           订阅（cdn.jsdelivr.net）
+    plugins-raw.json           订阅（raw.githubusercontent.com）
 scripts/
   lib.mjs                      解析与隔离探针
   probe-worker.mjs             单文件探针子进程（限内存、限时）

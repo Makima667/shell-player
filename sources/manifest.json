@@ -9,12 +9,12 @@
     "musicfree": 32
   },
   "endpoints": {
-    "lxIndex": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/index.json",
-    "lxIndexCdn": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
-    "musicfreeSubscription": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json",
-    "musicfreeSubscriptionFastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins-fastly.json",
+    "lxIndex": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
+    "lxIndexRaw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/index.json",
+    "musicfreeSubscription": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json",
+    "musicfreeSubscriptionCdn": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins-cdn.json",
     "musicfreeSubscriptionRaw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins-raw.json",
-    "manifest": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/manifest.json",
+    "manifest": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/manifest.json",
     "lxZip": "https://github.com/Makima667/shell-player/releases/download/sources/lx-sources.zip"
   },
   "platformLabels": {
