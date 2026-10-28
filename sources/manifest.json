@@ -1,0 +1,2060 @@
+{
+  "name": "Shell Player 音源库",
+  "description": "落雪音乐（LX Music）自定义音源 + MusicFree 插件订阅，安装即用。",
+  "repository": "https://github.com/Makima667/shell-player",
+  "branch": "main",
+  "generator": "scripts/build-index.mjs",
+  "counts": {
+    "lx": 15,
+    "musicfree": 32
+  },
+  "endpoints": {
+    "lxIndex": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/index.json",
+    "lxIndexCdn": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
+    "musicfreeSubscription": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins.json",
+    "musicfreeSubscriptionFastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins-fastly.json",
+    "musicfreeSubscriptionRaw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins-raw.json",
+    "manifest": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/manifest.json",
+    "lxZip": "https://github.com/Makima667/shell-player/releases/download/sources/lx-sources.zip"
+  },
+  "platformLabels": {
+    "kw": "酷我",
+    "kg": "酷狗",
+    "tx": "QQ音乐",
+    "wy": "网易云",
+    "mg": "咪咕",
+    "local": "本地"
+  },
+  "lx": [
+    {
+      "slug": "changqing-svip",
+      "name": "长青SVIP音源(二改修复版)",
+      "version": "v1.2.0",
+      "author": "作者不愿透露姓名",
+      "homepage": "TZB679",
+      "description": "二改版",
+      "tier": "primary",
+      "note": "长青 SVIP 二改修复版",
+      "platforms": [
+        "kg",
+        "tx",
+        "wy",
+        "kw"
+      ],
+      "platformNames": {
+        "kg": "kg音乐",
+        "tx": "tx音乐",
+        "wy": "wy音乐",
+        "kw": "kw音乐"
+      },
+      "qualitys": {
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": true,
+      "bytes": 44876,
+      "sha256": "48d5fed8b46344e9298d55427382ce573485a264a2ae287ed829e2f2548223e8",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/changqing-svip.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/changqing-svip.js"
+      }
+    },
+    {
+      "slug": "dujia-v5",
+      "name": "独家音源",
+      "version": "5",
+      "author": "w",
+      "homepage": "",
+      "description": "后续更新，请关注微信公众号: 洛雪科技",
+      "tier": "backup",
+      "note": "独家音源 v5，v6 失效时回退",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "platformNames": {
+        "kw": "kw",
+        "kg": "kg",
+        "tx": "tx",
+        "wy": "wy",
+        "mg": "mg",
+        "local": "local"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 62829,
+      "sha256": "65ae85f557e8f616d7f2a2446fe59078dee34c825bd766aa5b059b6255697c57",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/dujia-v5.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/dujia-v5.js"
+      }
+    },
+    {
+      "slug": "dujia-v6",
+      "name": "独家音源",
+      "version": "6",
+      "author": "w",
+      "homepage": "",
+      "description": "后续更新，请关注微信公众号: 洛雪科技",
+      "tier": "primary",
+      "note": "独家音源 v6，修复版",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "platformNames": {
+        "kw": "kw",
+        "kg": "kg",
+        "tx": "tx",
+        "wy": "wy",
+        "mg": "mg",
+        "local": "local"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 64094,
+      "sha256": "ef5289ddc2e8fd98ec7ac9e096878d9e6fed5e4ae1669d21e4484eac247aeda7",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/dujia-v6.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/dujia-v6.js"
+      }
+    },
+    {
+      "slug": "freelisten",
+      "name": "Free listen",
+      "version": "v1.1.2",
+      "author": "",
+      "homepage": "",
+      "description": "A lx-music source",
+      "tier": "backup",
+      "note": "FreeListen（原小熊猫）",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "platformNames": {
+        "kw": "酷我音乐",
+        "kg": "酷狗音乐",
+        "tx": "企鹅音乐",
+        "wy": "网易音乐",
+        "mg": "咪咕音乐"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k"
+        ],
+        "kg": [
+          "128k"
+        ],
+        "tx": [
+          "128k"
+        ],
+        "wy": [
+          "128k"
+        ],
+        "mg": [
+          "128k"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 18644,
+      "sha256": "ce5bfc74007fd14d697ed94f4414f0c20fbd4437999647b906a6dff549061eae",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/freelisten.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/freelisten.js"
+      }
+    },
+    {
+      "slug": "huibq",
+      "name": "Huibq_lxmusic源",
+      "version": "v1.2.0",
+      "author": "Huibq",
+      "homepage": "",
+      "description": "Github搜索“洛雪音乐音源”，反馈可前往GitHub提Issues或加入群组https://t.me/+Xh7BWUUPqUZlMDU1，禁止批量下载！",
+      "tier": "backup",
+      "note": "Huibq 轻量源，128k/320k",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "platformNames": {
+        "kw": "kw",
+        "kg": "kg",
+        "tx": "tx",
+        "wy": "wy",
+        "mg": "mg"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k"
+        ],
+        "kg": [
+          "128k",
+          "320k"
+        ],
+        "tx": [
+          "128k",
+          "320k"
+        ],
+        "wy": [
+          "128k",
+          "320k"
+        ],
+        "mg": [
+          "128k",
+          "320k"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 2805,
+      "sha256": "85e83855facc4e9ea6be3a82d525b179d7fad8e5dce24172d04ec68c428fa3d5",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/huibq.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/huibq.js"
+      }
+    },
+    {
+      "slug": "ikun",
+      "name": "ikun音源",
+      "version": "v513",
+      "author": "ikunshare",
+      "homepage": "",
+      "description": "请不要分享此音源，谢谢 951962664",
+      "tier": "primary",
+      "note": "ikun 自建服务端，五平台",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "platformNames": {
+        "kw": "kw",
+        "kg": "kg",
+        "tx": "tx",
+        "wy": "wy",
+        "mg": "mg"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 6093,
+      "sha256": "f3e879ab88ee1cd97a1af957de569cc27247c5fb4f02e8a9aab6e157a740ab74",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/ikun.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/ikun.js"
+      }
+    },
+    {
+      "slug": "juhe-lerd",
+      "name": "聚合API接口 (by lerd)",
+      "version": "v2.0.0",
+      "author": "lerd",
+      "homepage": "",
+      "description": "理论可听全平台无损",
+      "tier": "primary",
+      "note": "五平台聚合（lerd），接口稳定，主力推荐",
+      "platforms": [
+        "tx",
+        "wy",
+        "kg",
+        "kw",
+        "mg"
+      ],
+      "platformNames": {
+        "tx": "tx",
+        "wy": "wy",
+        "kg": "kg",
+        "kw": "kw",
+        "mg": "mg"
+      },
+      "qualitys": {
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "320k",
+          "flac"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": true,
+      "bytes": 18506,
+      "sha256": "8cd3f90d51011d2b82d9fbf8a7ffe2d087f334e6fb1ff27dfba07374db3f9acc",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/juhe-lerd.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/juhe-lerd.js"
+      }
+    },
+    {
+      "slug": "kuwo-des",
+      "name": "KuwoDES",
+      "version": "1.0.0",
+      "author": "不知名纯鹿人",
+      "homepage": "",
+      "description": "酷我音乐音源接口",
+      "tier": "backup",
+      "note": "酷我 DES 直连，单平台",
+      "platforms": [
+        "kw"
+      ],
+      "platformNames": {
+        "kw": "kw"
+      },
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 3289,
+      "sha256": "7ea4de7ec28c89972e1d20cb6f19b4ab5e37c14cd743bf758a6251f2efe47c18",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/kuwo-des.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/kuwo-des.js"
+      }
+    },
+    {
+      "slug": "kxh",
+      "name": "K×H测试",
+      "version": "1.7.17",
+      "author": "HYW & Koneko",
+      "homepage": "Miao-moe",
+      "description": "Koneko×HYW音源技术测试音源 - 多源聚合 + 多链路回退，支持 5 大平台，集成加密保护",
+      "tier": "backup",
+      "note": "K×H 测试源，接口较多",
+      "platforms": [
+        "wy",
+        "tx",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "platformNames": {
+        "wy": "网易云音乐",
+        "tx": "QQ音乐",
+        "kw": "酷我音乐",
+        "kg": "酷狗音乐",
+        "mg": "咪咕音乐"
+      },
+      "qualitys": {
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 68271,
+      "sha256": "5c0fd239110e4835533d7f289ad895cae2ded3917af501db0650f08f592265ea",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/kxh.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/kxh.js"
+      }
+    },
+    {
+      "slug": "liuyin",
+      "name": "六音音源",
+      "version": "v1.2.1",
+      "author": "六音",
+      "homepage": "www.sixyin.com",
+      "description": "v1.2.1 如失效请前往 www.sixyin.com 下载最新版本",
+      "tier": "primary",
+      "note": "六音官方源，支持无损；代码经过混淆",
+      "platforms": [],
+      "platformNames": {},
+      "qualitys": {},
+      "inited": false,
+      "initMode": "unknown",
+      "obfuscated": true,
+      "bytes": 333024,
+      "sha256": "8f0e153afd24e8d695fc752387aa43364deaeb24e3ba58feca1e2d268e86d810",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/liuyin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/liuyin.js"
+      }
+    },
+    {
+      "slug": "molan",
+      "name": "墨澜聚合音源",
+      "version": "2.2.0",
+      "author": "白姬9527(2449067834)",
+      "homepage": "",
+      "description": "全平台支持flac，酷狗、QQ、网易支持母带（全用的是别人的接口，类似于全豆要）",
+      "tier": "primary",
+      "note": "墨澜聚合，多接口回退",
+      "platforms": [
+        "tx",
+        "wy",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "platformNames": {
+        "tx": "QQ音乐",
+        "wy": "网易云音乐",
+        "kw": "酷我音乐",
+        "kg": "酷狗音乐",
+        "mg": "咪咕音乐"
+      },
+      "qualitys": {
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 77306,
+      "sha256": "d6c7cabaeb77c4231092b0d8f9f8b9bf9f0e0511215669631957aceb4bf34eb2",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/molan.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/molan.js"
+      }
+    },
+    {
+      "slug": "quandou",
+      "name": "全豆要[聚合音源]",
+      "version": "9.3 93特供版 DeepSeek优化",
+      "author": "全豆要 and Gemini优化 Toskysun去混淆 TZB679兼容性处理",
+      "homepage": "",
+      "description": "迭代9.3版本，聚合 星海/溯音/念心/长青/歌一刀专属汽水音乐，多链路自动回退",
+      "tier": "backup",
+      "note": "全豆要聚合特供版",
+      "platforms": [
+        "wy",
+        "tx",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "platformNames": {
+        "wy": "网易云音乐",
+        "tx": "QQ音乐",
+        "kw": "酷我音乐",
+        "kg": "酷狗音乐",
+        "mg": "咪咕音乐"
+      },
+      "qualitys": {
+        "wy": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "tx": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "kw": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "kg": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "mg": [
+          "flac",
+          "320k",
+          "128k"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 31037,
+      "sha256": "6e76f75e00f56ba30fe3b391b803f830f7b1d30cfb4c62ff660de496f9b4bb2b",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/quandou.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/quandou.js"
+      }
+    },
+    {
+      "slug": "xinghai",
+      "name": "星海音乐源",
+      "version": "v3.2.11",
+      "author": "万去了了",
+      "homepage": "https://zrcdy.dpdns.org/",
+      "description": "GDAPI | 聚合 | ChKSz API | 全平台支持24FLAC，网易、酷狗、QQ最高支持母带",
+      "tier": "backup",
+      "note": "星海轻量源",
+      "platforms": [
+        "wy",
+        "tx",
+        "kg",
+        "kw",
+        "mg"
+      ],
+      "platformNames": {
+        "wy": "网易云音乐",
+        "tx": "QQ音乐",
+        "kg": "酷狗音乐",
+        "kw": "酷我音乐",
+        "mg": "咪咕音乐"
+      },
+      "qualitys": {
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 12317,
+      "sha256": "de889d47bf6e12c27b841cea8254383425ddf3f94f54a4155c89616a0bd004df",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/xinghai.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/xinghai.js"
+      }
+    },
+    {
+      "slug": "yecao",
+      "name": "野草🌾",
+      "version": "1.0.0",
+      "author": "",
+      "homepage": "",
+      "description": "",
+      "tier": "backup",
+      "note": "野草原",
+      "platforms": [
+        "kw"
+      ],
+      "platformNames": {},
+      "qualitys": {
+        "kw": [
+          "128k"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 7155,
+      "sha256": "dfbba18d9e949a9fcfc74e4ca8a8be64ae7105524110314ed29159372307ce3f",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/yecao.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/yecao.js"
+      }
+    },
+    {
+      "slug": "yehua",
+      "name": "野花🌷",
+      "version": "1.0.0",
+      "author": "",
+      "homepage": "",
+      "description": "",
+      "tier": "backup",
+      "note": "野花源",
+      "platforms": [
+        "kw",
+        "wy",
+        "mg",
+        "tx",
+        "kg"
+      ],
+      "platformNames": {},
+      "qualitys": {
+        "kw": [
+          "128k"
+        ],
+        "wy": [
+          "128k"
+        ],
+        "mg": [
+          "128k"
+        ],
+        "tx": [
+          "128k"
+        ],
+        "kg": [
+          "128k"
+        ]
+      },
+      "inited": true,
+      "initMode": "offline",
+      "obfuscated": false,
+      "bytes": 7452,
+      "sha256": "4f677c4c655ffe353116db8921fd8b14aa06bb6c94787f317863ec33a637e2c4",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/yehua.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/yehua.js"
+      }
+    }
+  ],
+  "musicfree": [
+    {
+      "slug": "bili-cookie",
+      "name": "哔哩哔哩_Cookie",
+      "label": "哔哩哔哩 · 支持 Cookie",
+      "platform": "哔哩哔哩_Cookie",
+      "version": "0.7.3",
+      "author": "other",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "appVersion",
+        "version",
+        "author",
+        "description",
+        "userVariables",
+        "srcUrl",
+        "cacheControl",
+        "primaryKey",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 22035,
+      "sha256": "14c758d82fb9b29fb5201df6a826fff444c16c8b45b0c5de0b2e7fbdfb6c863c",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/bili-cookie.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/bili-cookie.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/bili-cookie.js"
+      }
+    },
+    {
+      "slug": "gd",
+      "name": "GD音乐台",
+      "label": "GD 音乐台",
+      "platform": "GD音乐台",
+      "version": "1.0.0",
+      "author": "Toskysun",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "userVariables",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getMusicInfo"
+      ],
+      "valid": true,
+      "bytes": 11483,
+      "sha256": "8f21ef50baf879321266490219dedf7cd2bda84af8b8540aaa1cdb7372bbdbcd",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/gd.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/gd.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/gd.js"
+      }
+    },
+    {
+      "slug": "kg-jianyun",
+      "name": "KuGou Lite",
+      "label": "酷狗 · 简云",
+      "platform": "KuGou Lite",
+      "version": "2.3.0",
+      "author": "简云",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "author",
+        "platform",
+        "version",
+        "srcUrl",
+        "primaryKey",
+        "cacheControl",
+        "hints",
+        "userVariables",
+        "supportedSearchType",
+        "search",
+        "getLyric",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getMusicSheetInfo",
+        "importMusicItem",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 43093,
+      "sha256": "4c09f1a9f2cdf1744cffdf9179689fc237a68551e1b630ed4ffb85daca8b284c",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-jianyun.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-jianyun.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-jianyun.js"
+      }
+    },
+    {
+      "slug": "kg-main",
+      "name": "酷狗",
+      "label": "酷狗 · 基础源",
+      "platform": "酷狗",
+      "version": "0.1.3",
+      "author": "",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "appVersion",
+        "order",
+        "srcUrl",
+        "cacheControl",
+        "primaryKey",
+        "hints",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getTopLists",
+        "getTopListDetail",
+        "getAlbumInfo",
+        "importMusicSheet"
+      ],
+      "valid": true,
+      "bytes": 12318,
+      "sha256": "acf505a066fba2525e0a1750a6a3ad328887309540972cfe08df4aab78558e1c",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-main.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-main.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-main.js"
+      }
+    },
+    {
+      "slug": "kg-nianxin",
+      "name": "酷狗(念心音源)",
+      "label": "酷狗 · 念心",
+      "platform": "酷狗(念心音源)",
+      "version": "1.0.0",
+      "author": "玥然OvO",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "primaryKey",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getTopLists",
+        "getLyric",
+        "getTopListDetail",
+        "getAlbumInfo",
+        "importMusicSheet"
+      ],
+      "valid": true,
+      "bytes": 15491,
+      "sha256": "21f527340042fe51a7525aeaef26d9d4036ecb701ddc2c68cc84b1d1d801753e",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-nianxin.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-nianxin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-nianxin.js"
+      }
+    },
+    {
+      "slug": "kg-yuanli",
+      "name": "元力KG",
+      "label": "酷狗 · 元力（代码混淆）",
+      "platform": "元力KG",
+      "version": "1.1.0",
+      "author": "公众号:科技长青&元力菌",
+      "tier": "primary",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "primaryKey",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getTopLists",
+        "getLyric",
+        "getTopListDetail",
+        "getAlbumInfo",
+        "importMusicSheet"
+      ],
+      "valid": true,
+      "bytes": 40418,
+      "sha256": "93fa9bba29442e55924c6bcd4109af60b69958613f5fbc1c9c85afd88b5a7e56",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-yuanli.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-yuanli.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-yuanli.js"
+      }
+    },
+    {
+      "slug": "kw-main",
+      "name": "酷我",
+      "label": "酷我 · 全量（代码混淆）",
+      "platform": "酷我",
+      "version": "0.1.6",
+      "author": "",
+      "tier": "backup",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 59219,
+      "sha256": "ab8c95b9ce1dec9ccb9bd4bbe2db0c48807fa0d2b97c9f5fca3f6ce1303b6916",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-main.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-main.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kw-main.js"
+      }
+    },
+    {
+      "slug": "kw-mao",
+      "name": "酷我",
+      "label": "酷我 · 猫",
+      "platform": "酷我",
+      "version": "0.1.7",
+      "author": "猫头猫",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 16300,
+      "sha256": "66a4654849662bed41691b8c8fe9deac12d89d4fe7638325d184b5de3ad794cf",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-mao.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-mao.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kw-mao.js"
+      }
+    },
+    {
+      "slug": "kw-nianxin",
+      "name": "酷我(念心音源)",
+      "label": "酷我 · 念心",
+      "platform": "酷我(念心音源)",
+      "version": "1.0.0",
+      "author": "玥然OvO",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 15880,
+      "sha256": "24ca24d96aefb7c9de614ac6caf5894e1987a6ae13ce2a646a9543bfdc4a4e63",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-nianxin.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-nianxin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kw-nianxin.js"
+      }
+    },
+    {
+      "slug": "kw-yuanli",
+      "name": "元力KW",
+      "label": "酷我 · 元力（代码混淆）",
+      "platform": "元力KW",
+      "version": "1.1.0",
+      "author": "公众号:科技长青&元力菌",
+      "tier": "primary",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 41092,
+      "sha256": "12f828f2de7cc61c2442e4f54b702718241352a47d32d2a9f61a9463f26fee57",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yuanli.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yuanli.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kw-yuanli.js"
+      }
+    },
+    {
+      "slug": "kw-yunyinyue",
+      "name": "云音乐",
+      "label": "云音乐 · 酷我渠道（代码混淆）",
+      "platform": "云音乐",
+      "version": "0.1.6",
+      "author": "",
+      "tier": "backup",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "appVersion",
+        "order",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 100420,
+      "sha256": "1ad5977dd3a378e2ec7a3a77d457c5ad6fe4f3e8ec57c1966fba5a83e4dba557",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yunyinyue.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yunyinyue.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kw-yunyinyue.js"
+      }
+    },
+    {
+      "slug": "maoer",
+      "name": "猫耳FM",
+      "label": "猫耳 FM",
+      "platform": "猫耳FM",
+      "version": "0.1.4",
+      "author": "猫头猫",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 6809,
+      "sha256": "60d07697ae4801a14121ee5f667e6d71e5f2f278ba53c1adf3e7dff6e9edb44d",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/maoer.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/maoer.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/maoer.js"
+      }
+    },
+    {
+      "slug": "mg-yuanli",
+      "name": "元力MG",
+      "label": "咪咕 · 元力（代码混淆）",
+      "platform": "元力MG",
+      "version": "1.1.0",
+      "author": "",
+      "tier": "primary",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "hints",
+        "primaryKey",
+        "cacheControl",
+        "srcUrl",
+        "supportedSearchType",
+        "getMediaSource",
+        "search",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getLyric",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 63181,
+      "sha256": "6fb7588b32d1a87aa2e328e4cf134933e2e761b35009420fadd0dbf24c9a2721",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/mg-yuanli.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/mg-yuanli.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/mg-yuanli.js"
+      }
+    },
+    {
+      "slug": "qianqian",
+      "name": "千千",
+      "label": "千千音乐",
+      "platform": "千千",
+      "version": "0.1.3",
+      "author": "猫头猫",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "getTopLists",
+        "getTopListDetail"
+      ],
+      "valid": true,
+      "bytes": 9795,
+      "sha256": "18f0fc1ac7bada6037770512fe99c8e2a0e4fd932c7a6523d7b7a18c5644fde3",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qianqian.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qianqian.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qianqian.js"
+      }
+    },
+    {
+      "slug": "qq-feivip",
+      "name": "QQ音乐",
+      "label": "QQ音乐 · 非VIP 渠道（代码混淆）",
+      "platform": "QQ音乐",
+      "version": "0.2.5",
+      "author": "",
+      "tier": "primary",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "cacheControl",
+        "hints",
+        "srcUrl",
+        "primaryKey",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 53757,
+      "sha256": "cee62c388561f91586f50220ca2cef2152693d096d85803f3645516cac4be731",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-feivip.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-feivip.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-feivip.js"
+      }
+    },
+    {
+      "slug": "qq-mao",
+      "name": "QQ",
+      "label": "QQ音乐 · 猫",
+      "platform": "QQ",
+      "version": "0.2.2",
+      "author": "猫头猫",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "primaryKey",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 18682,
+      "sha256": "8c48a0fac93b837976621374e136ce6e5807e29e024a9a62bc0298f1627b9d71",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-mao.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-mao.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-mao.js"
+      }
+    },
+    {
+      "slug": "qq-nianxin",
+      "name": "QQ(念心音源)",
+      "label": "QQ音乐 · 念心",
+      "platform": "QQ(念心音源)",
+      "version": "1.0.0",
+      "author": "玥然OvO",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "primaryKey",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 16229,
+      "sha256": "eb8ddec2cb7f93307ec89be4c94fe41b3a0b403ad98307c9d0b9946c36487b56",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-nianxin.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-nianxin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-nianxin.js"
+      }
+    },
+    {
+      "slug": "qq-tengxun",
+      "name": "腾讯音乐",
+      "label": "腾讯音乐 · 全量",
+      "platform": "腾讯音乐",
+      "version": "2025.09.13",
+      "author": "反馈Q群@365976134",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "hints",
+        "userVariables",
+        "primaryKey",
+        "supportedSearchType",
+        "search",
+        "importMusicSheet",
+        "importMusicItem",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo",
+        "getTopLists",
+        "getTopListDetail",
+        "getArtistWorks",
+        "getAlbumInfo",
+        "getMusicInfo",
+        "getMediaSource",
+        "getLyric",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 31337,
+      "sha256": "fe64a719deb361a630eb29c20c7f476c7c2273f025289007215d9f12227e6b91",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-tengxun.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-tengxun.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-tengxun.js"
+      }
+    },
+    {
+      "slug": "qq-yuanli",
+      "name": "元力QQ",
+      "label": "QQ音乐 · 元力（代码混淆）",
+      "platform": "元力QQ",
+      "version": "1.1.1",
+      "author": "公众号:科技长青&元力菌",
+      "tier": "backup",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "primaryKey",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo"
+      ],
+      "valid": true,
+      "bytes": 48923,
+      "sha256": "fdf1dc4c31e093073e0f2225f47bab778a0cbe3c3dd90b55bd1299f80a5d21bf",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-yuanli.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-yuanli.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-yuanli.js"
+      }
+    },
+    {
+      "slug": "qs-kaixin",
+      "name": "开心汽水",
+      "label": "开心汽水（代码混淆）",
+      "platform": "开心汽水",
+      "version": "0.1.5",
+      "author": "鸿蒙",
+      "tier": "backup",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMusicInfo",
+        "getLyric",
+        "getMediaSource",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getArtistWorks",
+        "getAlbumInfo",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 34229,
+      "sha256": "32586c11a0260ae34b4910484dba7ca998c5d72cc0a71e9ebb32a4fe3d3f8d51",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-kaixin.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-kaixin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qs-kaixin.js"
+      }
+    },
+    {
+      "slug": "qs-qishui",
+      "name": "汽水音乐",
+      "label": "汽水音乐",
+      "platform": "汽水音乐",
+      "version": "0.2.3",
+      "author": "Toskysun&简云",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "supportedQualities",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMusicInfo",
+        "getLyric",
+        "getMediaSource",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "getArtistWorks",
+        "getAlbumInfo",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMusicSheetInfo",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 27529,
+      "sha256": "afa3cba110e7cd7e5804c3d24cf374594ffdc64d8fbb995b63defdff03ed86c6",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-qishui.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-qishui.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qs-qishui.js"
+      }
+    },
+    {
+      "slug": "qs-vip",
+      "name": "汽水 Vip",
+      "label": "汽水 VIP",
+      "platform": "汽水 Vip",
+      "version": "2.2.0",
+      "author": "简云",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "author",
+        "platform",
+        "version",
+        "srcUrl",
+        "primaryKey",
+        "cacheControl",
+        "hints",
+        "userVariables",
+        "supportedSearchType",
+        "search",
+        "getLyric",
+        "getMediaSource",
+        "importMusicSheet"
+      ],
+      "valid": true,
+      "bytes": 8674,
+      "sha256": "1277b27e47f9daa2e8fec83165ae0813140d1ca5bf77dd6380e6693d669beaf9",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-vip.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-vip.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qs-vip.js"
+      }
+    },
+    {
+      "slug": "wy-bimiao",
+      "name": "网易(bimiao音源)",
+      "label": "网易云 · bimiao",
+      "platform": "网易(bimiao音源)",
+      "version": "1.1",
+      "author": "玥然OvO",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getMusicSheetInfo",
+        "getRecommendSheetsByTag"
+      ],
+      "valid": true,
+      "bytes": 18828,
+      "sha256": "62f3e8da99c2abf263e248c90b01a899c35a5f9a6cbbdcbf3f96b4efa2b60746",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-bimiao.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-bimiao.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-bimiao.js"
+      }
+    },
+    {
+      "slug": "wy-diantai",
+      "name": "网易云电台",
+      "label": "网易云电台",
+      "platform": "网易云电台",
+      "version": "0.0.2",
+      "author": "咕咕mur",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "supportedSearchType",
+        "search",
+        "getLyric",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getArtistWorks"
+      ],
+      "valid": true,
+      "bytes": 8531,
+      "sha256": "910cd4e3e349b937e4f7ec507f0411abf6ea96b58472de1d502c053a3eff498b",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-diantai.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-diantai.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-diantai.js"
+      }
+    },
+    {
+      "slug": "wy-feivip",
+      "name": "网易云音乐",
+      "label": "网易云 · 非VIP 渠道",
+      "platform": "网易云音乐",
+      "version": "0.2.3",
+      "author": "Ray",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getMusicSheetInfo",
+        "getRecommendSheetsByTag"
+      ],
+      "valid": true,
+      "bytes": 20016,
+      "sha256": "94d8963ef04beab93fc13b8b9419a1f98f3a3e98ad402c962b7a648422dd1c20",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-feivip.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-feivip.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-feivip.js"
+      }
+    },
+    {
+      "slug": "wy-nianxin",
+      "name": "网易(念心音源)",
+      "label": "网易云 · 念心",
+      "platform": "网易(念心音源)",
+      "version": "1.0.0",
+      "author": "玥然OvO",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getMusicSheetInfo",
+        "getRecommendSheetsByTag"
+      ],
+      "valid": true,
+      "bytes": 19017,
+      "sha256": "5ea2dbd27eb7173202dcc17e8e9ce9093ad005073d8949cc574e25bd283238ba",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-nianxin.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-nianxin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-nianxin.js"
+      }
+    },
+    {
+      "slug": "wy-yinyue",
+      "name": "网易音乐",
+      "label": "网易云 · 主源（2025.09 版）",
+      "platform": "网易音乐",
+      "version": "2025.09.14",
+      "author": "反馈Q群@365976134",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "appVersion",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "hints",
+        "userVariables",
+        "supportedSearchType",
+        "search",
+        "importMusicSheet",
+        "importMusicItem",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getMusicSheetInfo",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag",
+        "getMediaSource",
+        "getLyric",
+        "getMusicComments"
+      ],
+      "valid": true,
+      "bytes": 25453,
+      "sha256": "2f7504acb867e37e622cbd83f2556eda9b148ab6847a401e1e3e6e2f8c0839f2",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yinyue.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yinyue.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-yinyue.js"
+      }
+    },
+    {
+      "slug": "wy-yuanli",
+      "name": "元力WY",
+      "label": "网易云 · 元力（代码混淆）",
+      "platform": "元力WY",
+      "version": "1.1.1",
+      "author": "公众号:科技长青&元力菌",
+      "tier": "primary",
+      "obfuscated": true,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "supportedSearchType",
+        "search",
+        "getMediaSource",
+        "getMusicInfo",
+        "getAlbumInfo",
+        "getLyric",
+        "getArtistWorks",
+        "importMusicSheet",
+        "getTopLists",
+        "getTopListDetail",
+        "getRecommendSheetTags",
+        "getMusicSheetInfo",
+        "getRecommendSheetsByTag"
+      ],
+      "valid": true,
+      "bytes": 60874,
+      "sha256": "39b29a5ee44203cc3ae2c0119497943fe531bd95dcccdebd7f117d2575086478",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yuanli.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yuanli.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-yuanli.js"
+      }
+    },
+    {
+      "slug": "wy-zhuanji",
+      "name": "网易专辑",
+      "label": "网易专辑",
+      "platform": "网易专辑",
+      "version": "0.0.1",
+      "author": "sinmite",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "supportedSearchType",
+        "search",
+        "getLyric",
+        "getMediaSource",
+        "getAlbumInfo",
+        "getArtistWorks"
+      ],
+      "valid": true,
+      "bytes": 8479,
+      "sha256": "65a47cffd272f125f5671a39be576454333ba5e51703412f5cc5804761b00ee4",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-zhuanji.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-zhuanji.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-zhuanji.js"
+      }
+    },
+    {
+      "slug": "ximalaya",
+      "name": "喜马拉雅(笭鬼鬼API)",
+      "label": "喜马拉雅",
+      "platform": "喜马拉雅(笭鬼鬼API)",
+      "version": "1.6",
+      "author": "竹佀",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "supportedSearchType",
+        "cacheControl",
+        "search",
+        "getAlbumInfo",
+        "getMediaSource",
+        "getArtistWorks",
+        "getLyric",
+        "clearCache"
+      ],
+      "valid": true,
+      "bytes": 11985,
+      "sha256": "4e84b9a3e3d9fa6ed4781a87bc1074b8c8ed2ccbe92f39e63ca6b3f0eb9eb254",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/ximalaya.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/ximalaya.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/ximalaya.js"
+      }
+    },
+    {
+      "slug": "yt",
+      "name": "Youtube",
+      "label": "YouTube",
+      "platform": "Youtube",
+      "version": "0.0.1",
+      "author": "猫头猫",
+      "tier": "backup",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "supportedSearchType",
+        "srcUrl",
+        "cacheControl",
+        "search",
+        "getMediaSource"
+      ],
+      "valid": true,
+      "bytes": 7410,
+      "sha256": "c95827eb9c1720f780e6f22289bc63947e7baf139a9b69a30ace975cbe71b464",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yt.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yt.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/yt.js"
+      }
+    },
+    {
+      "slug": "yunyun",
+      "name": "云云音乐",
+      "label": "云云音乐 · 聚合",
+      "platform": "云云音乐",
+      "version": "1.0.3",
+      "author": "小橙QQ群1077835447",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "author",
+        "version",
+        "srcUrl",
+        "cacheControl",
+        "description",
+        "hints",
+        "supportedSearchType",
+        "supportedGetMediaSourceQuality",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getAlbumInfo",
+        "getArtistWorks",
+        "getPlaylistDetail",
+        "getMusicSheetInfo",
+        "getSongDetail",
+        "getRecommendPlaylists",
+        "getRecommendAlbums",
+        "getTopLists",
+        "getTopListDetail",
+        "importMusicSheet",
+        "importMusicItem",
+        "getRecommendSheetTags",
+        "getRecommendSheetsByTag"
+      ],
+      "valid": true,
+      "bytes": 162784,
+      "sha256": "3cf75ccfc603101fa15766621a7acfe46f91d2bb615e414f4a31097ffaafcdd9",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yunyun.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yunyun.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/yunyun.js"
+      }
+    }
+  ]
+}

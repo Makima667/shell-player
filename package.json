@@ -1,0 +1,17 @@
+{
+  "name": "shell-player",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "落雪音乐（LX Music）音源 + MusicFree 插件订阅，安装即用",
+  "scripts": {
+    "build": "node scripts/build-index.mjs",
+    "validate": "node scripts/validate.mjs",
+    "test": "node --test",
+    "install:lx": "node scripts/install.mjs",
+    "urls": "node scripts/install.mjs --print-urls"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

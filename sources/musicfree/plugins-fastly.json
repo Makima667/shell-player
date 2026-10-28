@@ -1,0 +1,165 @@
+{
+  "desc": "Shell Player 音源库 · MusicFree 插件订阅（32 个）",
+  "plugins": [
+    {
+      "name": "哔哩哔哩 · 支持 Cookie",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/bili-cookie.js",
+      "version": "0.7.3"
+    },
+    {
+      "name": "GD 音乐台",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/gd.js",
+      "version": "1.0.0"
+    },
+    {
+      "name": "酷狗 · 简云",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-jianyun.js",
+      "version": "2.3.0"
+    },
+    {
+      "name": "酷狗 · 基础源",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-main.js",
+      "version": "0.1.3"
+    },
+    {
+      "name": "酷狗 · 念心",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-nianxin.js",
+      "version": "1.0.0"
+    },
+    {
+      "name": "酷狗 · 元力（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-yuanli.js",
+      "version": "1.1.0"
+    },
+    {
+      "name": "酷我 · 全量（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-main.js",
+      "version": "0.1.6"
+    },
+    {
+      "name": "酷我 · 猫",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-mao.js",
+      "version": "0.1.7"
+    },
+    {
+      "name": "酷我 · 念心",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-nianxin.js",
+      "version": "1.0.0"
+    },
+    {
+      "name": "酷我 · 元力（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yuanli.js",
+      "version": "1.1.0"
+    },
+    {
+      "name": "云音乐 · 酷我渠道（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kw-yunyinyue.js",
+      "version": "0.1.6"
+    },
+    {
+      "name": "猫耳 FM",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/maoer.js",
+      "version": "0.1.4"
+    },
+    {
+      "name": "咪咕 · 元力（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/mg-yuanli.js",
+      "version": "1.1.0"
+    },
+    {
+      "name": "千千音乐",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qianqian.js",
+      "version": "0.1.3"
+    },
+    {
+      "name": "QQ音乐 · 非VIP 渠道（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-feivip.js",
+      "version": "0.2.5"
+    },
+    {
+      "name": "QQ音乐 · 猫",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-mao.js",
+      "version": "0.2.2"
+    },
+    {
+      "name": "QQ音乐 · 念心",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-nianxin.js",
+      "version": "1.0.0"
+    },
+    {
+      "name": "腾讯音乐 · 全量",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-tengxun.js",
+      "version": "2025.09.13"
+    },
+    {
+      "name": "QQ音乐 · 元力（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-yuanli.js",
+      "version": "1.1.1"
+    },
+    {
+      "name": "开心汽水（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-kaixin.js",
+      "version": "0.1.5"
+    },
+    {
+      "name": "汽水音乐",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-qishui.js",
+      "version": "0.2.3"
+    },
+    {
+      "name": "汽水 VIP",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qs-vip.js",
+      "version": "2.2.0"
+    },
+    {
+      "name": "网易云 · bimiao",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-bimiao.js",
+      "version": "1.1"
+    },
+    {
+      "name": "网易云电台",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-diantai.js",
+      "version": "0.0.2"
+    },
+    {
+      "name": "网易云 · 非VIP 渠道",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-feivip.js",
+      "version": "0.2.3"
+    },
+    {
+      "name": "网易云 · 念心",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-nianxin.js",
+      "version": "1.0.0"
+    },
+    {
+      "name": "网易云 · 主源（2025.09 版）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yinyue.js",
+      "version": "2025.09.14"
+    },
+    {
+      "name": "网易云 · 元力（代码混淆）",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-yuanli.js",
+      "version": "1.1.1"
+    },
+    {
+      "name": "网易专辑",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-zhuanji.js",
+      "version": "0.0.1"
+    },
+    {
+      "name": "喜马拉雅",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/ximalaya.js",
+      "version": "1.6"
+    },
+    {
+      "name": "YouTube",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yt.js",
+      "version": "0.0.1"
+    },
+    {
+      "name": "云云音乐 · 聚合",
+      "url": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/yunyun.js",
+      "version": "1.0.3"
+    }
+  ]
+}

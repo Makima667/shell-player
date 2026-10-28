@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 校验音源与索引
+        run: node scripts/validate.mjs
+      - name: 安装脚本回归测试
+        run: node --test
+
+  package:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: 打包 LX 音源
+        run: |
+          mkdir -p dist
+          cd sources/lx
+          zip -r ../../dist/lx-sources.zip . -x '.*'
+          cd ../..
+          ls -l dist
+      - name: 更新 Release 资源
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view sources >/dev/null 2>&1 \
+            || gh release create sources --title "音源包" --notes "由 CI 自动构建：sources/lx 全量打包，供 LX Music 移动版手动导入。"
+          gh release upload sources dist/lx-sources.zip --clobber

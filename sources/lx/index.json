@@ -1,0 +1,642 @@
+{
+  "name": "Shell Player 音源库",
+  "description": "LX Music 自定义音源索引：直接导入仓库内 sources/lx/*.js 文件，或用 install 脚本写入桌面版。",
+  "repository": "https://github.com/Makima667/shell-player",
+  "endpoints": {
+    "zip": "https://github.com/Makima667/shell-player/releases/download/sources/lx-sources.zip",
+    "indexJson": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/index.json"
+  },
+  "sources": [
+    {
+      "slug": "changqing-svip",
+      "name": "长青SVIP音源(二改修复版)",
+      "version": "v1.2.0",
+      "author": "作者不愿透露姓名",
+      "tier": "primary",
+      "platforms": [
+        "kg",
+        "tx",
+        "wy",
+        "kw"
+      ],
+      "qualitys": {
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "note": "长青 SVIP 二改修复版",
+      "obfuscated": true,
+      "sha256": "48d5fed8b46344e9298d55427382ce573485a264a2ae287ed829e2f2548223e8",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/changqing-svip.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/changqing-svip.js"
+      }
+    },
+    {
+      "slug": "dujia-v5",
+      "name": "独家音源",
+      "version": "5",
+      "author": "w",
+      "tier": "backup",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "note": "独家音源 v5，v6 失效时回退",
+      "obfuscated": false,
+      "sha256": "65ae85f557e8f616d7f2a2446fe59078dee34c825bd766aa5b059b6255697c57",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/dujia-v5.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/dujia-v5.js"
+      }
+    },
+    {
+      "slug": "dujia-v6",
+      "name": "独家音源",
+      "version": "6",
+      "author": "w",
+      "tier": "primary",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "note": "独家音源 v6，修复版",
+      "obfuscated": false,
+      "sha256": "ef5289ddc2e8fd98ec7ac9e096878d9e6fed5e4ae1669d21e4484eac247aeda7",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/dujia-v6.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/dujia-v6.js"
+      }
+    },
+    {
+      "slug": "freelisten",
+      "name": "Free listen",
+      "version": "v1.1.2",
+      "author": "",
+      "tier": "backup",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k"
+        ],
+        "kg": [
+          "128k"
+        ],
+        "tx": [
+          "128k"
+        ],
+        "wy": [
+          "128k"
+        ],
+        "mg": [
+          "128k"
+        ]
+      },
+      "note": "FreeListen（原小熊猫）",
+      "obfuscated": false,
+      "sha256": "ce5bfc74007fd14d697ed94f4414f0c20fbd4437999647b906a6dff549061eae",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/freelisten.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/freelisten.js"
+      }
+    },
+    {
+      "slug": "huibq",
+      "name": "Huibq_lxmusic源",
+      "version": "v1.2.0",
+      "author": "Huibq",
+      "tier": "backup",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k"
+        ],
+        "kg": [
+          "128k",
+          "320k"
+        ],
+        "tx": [
+          "128k",
+          "320k"
+        ],
+        "wy": [
+          "128k",
+          "320k"
+        ],
+        "mg": [
+          "128k",
+          "320k"
+        ]
+      },
+      "note": "Huibq 轻量源，128k/320k",
+      "obfuscated": false,
+      "sha256": "85e83855facc4e9ea6be3a82d525b179d7fad8e5dce24172d04ec68c428fa3d5",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/huibq.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/huibq.js"
+      }
+    },
+    {
+      "slug": "ikun",
+      "name": "ikun音源",
+      "version": "v513",
+      "author": "ikunshare",
+      "tier": "primary",
+      "platforms": [
+        "kw",
+        "kg",
+        "tx",
+        "wy",
+        "mg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "note": "ikun 自建服务端，五平台",
+      "obfuscated": false,
+      "sha256": "f3e879ab88ee1cd97a1af957de569cc27247c5fb4f02e8a9aab6e157a740ab74",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/ikun.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/ikun.js"
+      }
+    },
+    {
+      "slug": "juhe-lerd",
+      "name": "聚合API接口 (by lerd)",
+      "version": "v2.0.0",
+      "author": "lerd",
+      "tier": "primary",
+      "platforms": [
+        "tx",
+        "wy",
+        "kg",
+        "kw",
+        "mg"
+      ],
+      "qualitys": {
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "320k",
+          "flac"
+        ]
+      },
+      "note": "五平台聚合（lerd），接口稳定，主力推荐",
+      "obfuscated": true,
+      "sha256": "8cd3f90d51011d2b82d9fbf8a7ffe2d087f334e6fb1ff27dfba07374db3f9acc",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/juhe-lerd.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/juhe-lerd.js"
+      }
+    },
+    {
+      "slug": "kuwo-des",
+      "name": "KuwoDES",
+      "version": "1.0.0",
+      "author": "不知名纯鹿人",
+      "tier": "backup",
+      "platforms": [
+        "kw"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "note": "酷我 DES 直连，单平台",
+      "obfuscated": false,
+      "sha256": "7ea4de7ec28c89972e1d20cb6f19b4ab5e37c14cd743bf758a6251f2efe47c18",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/kuwo-des.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/kuwo-des.js"
+      }
+    },
+    {
+      "slug": "kxh",
+      "name": "K×H测试",
+      "version": "1.7.17",
+      "author": "HYW & Koneko",
+      "tier": "backup",
+      "platforms": [
+        "wy",
+        "tx",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "qualitys": {
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ]
+      },
+      "note": "K×H 测试源，接口较多",
+      "obfuscated": false,
+      "sha256": "5c0fd239110e4835533d7f289ad895cae2ded3917af501db0650f08f592265ea",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/kxh.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/kxh.js"
+      }
+    },
+    {
+      "slug": "liuyin",
+      "name": "六音音源",
+      "version": "v1.2.1",
+      "author": "六音",
+      "tier": "primary",
+      "platforms": [],
+      "qualitys": {},
+      "note": "六音官方源，支持无损；代码经过混淆",
+      "obfuscated": true,
+      "sha256": "8f0e153afd24e8d695fc752387aa43364deaeb24e3ba58feca1e2d268e86d810",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/liuyin.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/liuyin.js"
+      }
+    },
+    {
+      "slug": "molan",
+      "name": "墨澜聚合音源",
+      "version": "2.2.0",
+      "author": "白姬9527(2449067834)",
+      "tier": "primary",
+      "platforms": [
+        "tx",
+        "wy",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "qualitys": {
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "wy": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "note": "墨澜聚合，多接口回退",
+      "obfuscated": false,
+      "sha256": "d6c7cabaeb77c4231092b0d8f9f8b9bf9f0e0511215669631957aceb4bf34eb2",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/molan.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/molan.js"
+      }
+    },
+    {
+      "slug": "quandou",
+      "name": "全豆要[聚合音源]",
+      "version": "9.3 93特供版 DeepSeek优化",
+      "author": "全豆要 and Gemini优化 Toskysun去混淆 TZB679兼容性处理",
+      "tier": "backup",
+      "platforms": [
+        "wy",
+        "tx",
+        "kw",
+        "kg",
+        "mg"
+      ],
+      "qualitys": {
+        "wy": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "tx": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "kw": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "kg": [
+          "flac",
+          "320k",
+          "128k"
+        ],
+        "mg": [
+          "flac",
+          "320k",
+          "128k"
+        ]
+      },
+      "note": "全豆要聚合特供版",
+      "obfuscated": false,
+      "sha256": "6e76f75e00f56ba30fe3b391b803f830f7b1d30cfb4c62ff660de496f9b4bb2b",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/quandou.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/quandou.js"
+      }
+    },
+    {
+      "slug": "xinghai",
+      "name": "星海音乐源",
+      "version": "v3.2.11",
+      "author": "万去了了",
+      "tier": "backup",
+      "platforms": [
+        "wy",
+        "tx",
+        "kg",
+        "kw",
+        "mg"
+      ],
+      "qualitys": {
+        "wy": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "tx": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kg": [
+          "128k",
+          "320k",
+          "flac"
+        ],
+        "kw": [
+          "128k",
+          "320k",
+          "flac",
+          "flac24bit"
+        ],
+        "mg": [
+          "128k",
+          "320k",
+          "flac"
+        ]
+      },
+      "note": "星海轻量源",
+      "obfuscated": false,
+      "sha256": "de889d47bf6e12c27b841cea8254383425ddf3f94f54a4155c89616a0bd004df",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/xinghai.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/xinghai.js"
+      }
+    },
+    {
+      "slug": "yecao",
+      "name": "野草🌾",
+      "version": "1.0.0",
+      "author": "",
+      "tier": "backup",
+      "platforms": [
+        "kw"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k"
+        ]
+      },
+      "note": "野草原",
+      "obfuscated": false,
+      "sha256": "dfbba18d9e949a9fcfc74e4ca8a8be64ae7105524110314ed29159372307ce3f",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/yecao.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/yecao.js"
+      }
+    },
+    {
+      "slug": "yehua",
+      "name": "野花🌷",
+      "version": "1.0.0",
+      "author": "",
+      "tier": "backup",
+      "platforms": [
+        "kw",
+        "wy",
+        "mg",
+        "tx",
+        "kg"
+      ],
+      "qualitys": {
+        "kw": [
+          "128k"
+        ],
+        "wy": [
+          "128k"
+        ],
+        "mg": [
+          "128k"
+        ],
+        "tx": [
+          "128k"
+        ],
+        "kg": [
+          "128k"
+        ]
+      },
+      "note": "野花源",
+      "obfuscated": false,
+      "sha256": "4f677c4c655ffe353116db8921fd8b14aa06bb6c94787f317863ec33a637e2c4",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/yehua.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/lx/yehua.js"
+      }
+    }
+  ]
+}

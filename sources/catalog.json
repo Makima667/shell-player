@@ -1,0 +1,241 @@
+{
+  "lx": [
+    {
+      "slug": "juhe-lerd",
+      "tier": "primary",
+      "note": "五平台聚合（lerd），接口稳定，主力推荐"
+    },
+    {
+      "slug": "liuyin",
+      "tier": "primary",
+      "note": "六音官方源，支持无损；代码经过混淆"
+    },
+    {
+      "slug": "ikun",
+      "tier": "primary",
+      "note": "ikun 自建服务端，五平台"
+    },
+    {
+      "slug": "huibq",
+      "tier": "backup",
+      "note": "Huibq 轻量源，128k/320k"
+    },
+    {
+      "slug": "molan",
+      "tier": "primary",
+      "note": "墨澜聚合，多接口回退"
+    },
+    {
+      "slug": "xinghai",
+      "tier": "backup",
+      "note": "星海轻量源"
+    },
+    {
+      "slug": "dujia-v6",
+      "tier": "primary",
+      "note": "独家音源 v6，修复版"
+    },
+    {
+      "slug": "dujia-v5",
+      "tier": "backup",
+      "note": "独家音源 v5，v6 失效时回退"
+    },
+    {
+      "slug": "changqing-svip",
+      "tier": "primary",
+      "note": "长青 SVIP 二改修复版"
+    },
+    {
+      "slug": "kuwo-des",
+      "tier": "backup",
+      "note": "酷我 DES 直连，单平台"
+    },
+    {
+      "slug": "yehua",
+      "tier": "backup",
+      "note": "野花源"
+    },
+    {
+      "slug": "yecao",
+      "tier": "backup",
+      "note": "野草原"
+    },
+    {
+      "slug": "freelisten",
+      "tier": "backup",
+      "note": "FreeListen（原小熊猫）"
+    },
+    {
+      "slug": "quandou",
+      "tier": "backup",
+      "note": "全豆要聚合特供版"
+    },
+    {
+      "slug": "kxh",
+      "tier": "backup",
+      "note": "K×H 测试源，接口较多"
+    }
+  ],
+  "musicfree": [
+    {
+      "slug": "wy-yinyue",
+      "tier": "primary",
+      "note": "网易云 · 主源（2025.09 版）"
+    },
+    {
+      "slug": "wy-nianxin",
+      "tier": "backup",
+      "note": "网易云 · 念心"
+    },
+    {
+      "slug": "wy-bimiao",
+      "tier": "backup",
+      "note": "网易云 · bimiao"
+    },
+    {
+      "slug": "wy-feivip",
+      "tier": "backup",
+      "note": "网易云 · 非VIP 渠道"
+    },
+    {
+      "slug": "wy-yuanli",
+      "tier": "primary",
+      "note": "网易云 · 元力（代码混淆）"
+    },
+    {
+      "slug": "wy-diantai",
+      "tier": "backup",
+      "note": "网易云电台"
+    },
+    {
+      "slug": "wy-zhuanji",
+      "tier": "backup",
+      "note": "网易专辑"
+    },
+    {
+      "slug": "qq-feivip",
+      "tier": "primary",
+      "note": "QQ音乐 · 非VIP 渠道（代码混淆）"
+    },
+    {
+      "slug": "qq-nianxin",
+      "tier": "primary",
+      "note": "QQ音乐 · 念心"
+    },
+    {
+      "slug": "qq-tengxun",
+      "tier": "primary",
+      "note": "腾讯音乐 · 全量"
+    },
+    {
+      "slug": "qq-yuanli",
+      "tier": "backup",
+      "note": "QQ音乐 · 元力（代码混淆）"
+    },
+    {
+      "slug": "qq-mao",
+      "tier": "backup",
+      "note": "QQ音乐 · 猫"
+    },
+    {
+      "slug": "kg-jianyun",
+      "tier": "primary",
+      "note": "酷狗 · 简云"
+    },
+    {
+      "slug": "kg-nianxin",
+      "tier": "backup",
+      "note": "酷狗 · 念心"
+    },
+    {
+      "slug": "kg-yuanli",
+      "tier": "primary",
+      "note": "酷狗 · 元力（代码混淆）"
+    },
+    {
+      "slug": "kg-main",
+      "tier": "backup",
+      "note": "酷狗 · 基础源"
+    },
+    {
+      "slug": "kw-mao",
+      "tier": "primary",
+      "note": "酷我 · 猫"
+    },
+    {
+      "slug": "kw-nianxin",
+      "tier": "backup",
+      "note": "酷我 · 念心"
+    },
+    {
+      "slug": "kw-yuanli",
+      "tier": "primary",
+      "note": "酷我 · 元力（代码混淆）"
+    },
+    {
+      "slug": "kw-main",
+      "tier": "backup",
+      "note": "酷我 · 全量（代码混淆）"
+    },
+    {
+      "slug": "mg-yuanli",
+      "tier": "primary",
+      "note": "咪咕 · 元力（代码混淆）"
+    },
+    {
+      "slug": "qs-qishui",
+      "tier": "primary",
+      "note": "汽水音乐"
+    },
+    {
+      "slug": "qs-vip",
+      "tier": "backup",
+      "note": "汽水 VIP"
+    },
+    {
+      "slug": "qs-kaixin",
+      "tier": "backup",
+      "note": "开心汽水（代码混淆）"
+    },
+    {
+      "slug": "bili-cookie",
+      "tier": "primary",
+      "note": "哔哩哔哩 · 支持 Cookie"
+    },
+    {
+      "slug": "yt",
+      "tier": "backup",
+      "note": "YouTube"
+    },
+    {
+      "slug": "maoer",
+      "tier": "backup",
+      "note": "猫耳 FM"
+    },
+    {
+      "slug": "ximalaya",
+      "tier": "primary",
+      "note": "喜马拉雅"
+    },
+    {
+      "slug": "gd",
+      "tier": "backup",
+      "note": "GD 音乐台"
+    },
+    {
+      "slug": "qianqian",
+      "tier": "backup",
+      "note": "千千音乐"
+    },
+    {
+      "slug": "yunyun",
+      "tier": "primary",
+      "note": "云云音乐 · 聚合"
+    },
+    {
+      "slug": "kw-yunyinyue",
+      "tier": "backup",
+      "note": "云音乐 · 酷我渠道（代码混淆）"
+    }
+  ]
+}
