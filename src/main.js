@@ -8,6 +8,7 @@ import { SubscriptionError, detectKind, compileSource } from './sources/compile.
 import { demoSource, DEMO_SONGS } from './sources/demo.js';
 import { localSource } from './sources/local.js';
 import { LX_NAMES } from './sources/platforms.js';
+import { seedBundledSources, rememberBundledRemoved } from './sources/bundled/seed.js';
 import { TEMPLATES, DOC_HTML } from './ui/docs.js';
 import { extractColors, Visualizer } from './ui/fx.js';
 import { enableRipple, burst, flyCover, Spinner, moveIndicator, fadeVolume } from './ui/anim.js';
@@ -788,6 +789,7 @@ $('#sourceList').addEventListener('click', e => {
     // 来自订阅的音源删掉后，自动更新订阅时不再加回来
     const url = sources.entries.find(e => e.id === id)?.url;
     if (url) store.set('subRemoved', [...new Set([...store.get('subRemoved', []), url])]);
+    rememberBundledRemoved(store, id);
     sources.remove(id); renderSources(); toast('已删除音源');
   }
 });
@@ -795,6 +797,21 @@ $('#sourceList').addEventListener('change', e => {
   const cb = e.target.closest('[data-sa="toggle"]'); if (!cb) return;
   sources.setEnabled(cb.closest('.src').dataset.id, cb.checked);
   renderSources();
+});
+$('#bundledRestore')?.addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  btn.disabled = true;
+  try {
+    const r = await seedBundledSources(sources, { store, force: true });
+    renderSources();
+    const n = r.added.length + r.updated.length;
+    toast(n ? `内置音源已就绪（${n} 个）` : '内置音源都已经在了');
+    if (r.failed.length) toast(`${r.failed.length} 个内置音源加载失败：${r.failed[0].item.name}`, 6000);
+  } catch (err) {
+    toast('恢复内置音源失败：' + (err?.message || err), 6000);
+  } finally {
+    btn.disabled = false;
+  }
 });
 async function importLocal(files) {
   const ids = localSource.import(files);
@@ -1700,6 +1717,8 @@ async function boot() {
     store, builtins, env: isMobile() ? 'mobile' : 'desktop',
     onUpdateAlert: (id, d) => toast(`「${sources.name(id)}」有新版本${d.log ? '：\n' + String(d.log).slice(0, 120) : ''}`, 6000)
   });
+  // 首次启动就把内置音源装好，省掉"装完了还得自己找音源"这一步
+  await seedBundledSources(sources, { store }).catch(err => console.warn('内置音源加载失败', err));
   await sources.loadAll();
   localSource.setHooks({ fileUrl: fileSrc, lyric: localMusic.lyric, readTags: f => import('./core/tags.js').then(m => m.readTags(f)) });
   if (localMusic.available()) {

@@ -85,6 +85,10 @@
     <section class="view" data-view="sources" hidden>
       <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn" id="updateAll" title="重新下载按网址或订阅导入的音源，有新版本就替换">检查更新</button><button class="btn primary" id="addSrc">添加音源</button></header>
       <div class="sources" id="sourceList"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="bundledRestore" title="把随包内置的音源重新加回来，删掉的也会恢复">恢复内置音源</button>
+        <span class="small muted">内置音源可随时停用或删除；删掉后不会自动加回来，需要时点这里</span>
+      </div>
       <input type="file" id="localPick" accept="audio/*,.lrc,.flac,.m4a,.ogg,.opus,.wav,.mp3,.ape" multiple hidden>
       <input type="file" id="localDir" webkitdirectory multiple hidden>
     </section>
