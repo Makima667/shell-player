@@ -151,6 +151,8 @@ jobs:
       - name: 生成安卓工程
         run: |
           npx tauri android init --ci
+          # 用仓库里的图标（自适应图标前景 + 深色底）覆盖模板自带的
+          cp -r src-tauri/icons/android/. src-tauri/gen/android/app/src/main/res/
           # 很多音频地址是 http，正式版也需要允许明文流量
           sed -i 's/manifestPlaceholders\["usesCleartextTraffic"\] = "false"/manifestPlaceholders["usesCleartextTraffic"] = "true"/' src-tauri/gen/android/app/build.gradle.kts
       - name: 构建 APK
