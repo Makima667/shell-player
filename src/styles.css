@@ -649,10 +649,6 @@ body.calm .rip, body.calm .burst { display: none; }
 .btn.primary:hover { background: var(--accent); }
 .icon-btn:hover { background: var(--hover); }
 .icon-btn.on { color: var(--fg); background: var(--hover); }
-/* 喜欢：没收藏是空心描边，收藏后是实心红色，一眼能分清 */
-.icon-btn.heart.on { color: #ff4d6d; background: none; }
-.heart svg path { transition: fill .25s, stroke .25s; }
-.heart:not(.on) svg path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 .input, .select, textarea.input, .search-box { background: var(--sunk); border-color: transparent; }
 .chip { background: var(--hover); border-color: transparent; }
 .chip.accent { background: var(--hover); color: var(--muted); }

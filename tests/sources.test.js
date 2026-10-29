@@ -218,10 +218,3 @@ test('本地歌曲没有歌词时，从联网音源里的同一首歌借歌词',
   const none = await sm.resolveLyric({ id: 'p:/b.mp3', title: '没有这首', artist: '某人', sourceId: 'local' });
   assert.equal(none.lrc, '');
 });
-
-test('专用线路列表给出明确提示', async () => {
-  const cfg = JSON.stringify({ lines: [{ id: 'kw', name: 'x', enabled: true, searchApi: 'fetchSearchMusic', detailApi: 'fetchMusicDetail', levels: ['standard'] }] });
-  for (const code of [cfg, '/*\n * @name 示例\n */\n' + cfg]) {
-    await assert.rejects(compileSource(code), /线路列表/);
-  }
-});

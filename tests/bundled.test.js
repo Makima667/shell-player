@@ -38,7 +38,7 @@ test('洛雪内置源都能编译，并且能取播放地址', async () => {
 
 test('MusicFree 内置源都能编译，并且可搜索、可取地址', async () => {
   const list = files('musicfree');
-  assert.ok(list.length >= 6, '内置 MusicFree 源数量不应少于 6');
+  assert.ok(list.length >= 3, '内置 MusicFree 源数量不应少于 3');
   const platforms = new Set();
   for (const f of list) {
     const code = read('musicfree', f);

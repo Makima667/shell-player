@@ -264,21 +264,6 @@ async function latestRelease(current, pick) {
   return { version: String(r.tag_name).replace(/^v/, ''), notes: r.body || '', url: file ? file.browser_download_url : r.html_url };
 }
 
-// 桌面版全局快捷键：窗口没在前台也能用。keys = { "Control+Alt+P": fn, … }，返回注册失败（被别的软件占用）的那些
-export const globalKeys = {
-  available: () => isDesktopApp(),
-  async set(keys) {
-    if (!isDesktopApp()) return [];
-    const gs = await import('@tauri-apps/plugin-global-shortcut');
-    await gs.unregisterAll().catch(() => {});
-    const failed = [];
-    for (const [k, fn] of Object.entries(keys)) {
-      try { await gs.register(k, e => { if (e.state === 'Pressed') fn(); }); } catch { failed.push(k); }
-    }
-    return failed;
-  }
-};
-
 export async function openExternal(url) {
   if (!isTauri) return window.open(url, '_blank', 'noopener');
   const { openUrl } = await import('@tauri-apps/plugin-opener');
