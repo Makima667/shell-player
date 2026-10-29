@@ -54,6 +54,58 @@ const FILES = {
 };
 const QUALITY_OF = { F000: 'flac', M800: '320k', M500: '128k' };
 
+// 同一首歌在 QQ 上常有多条发行（专辑版 / 精选集版 / 单曲版），付费标记不一样。
+// 用户点的那条是 VIP、另一条免费时，直接放能播的那条——同名同歌手，不是随便拿翻唱顶替。
+const siblingCache = new Map();
+
+async function searchRaw(keyword, page = 1, limit = 30) {
+  const url = `https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(keyword)}&format=json&n=${limit}&p=${page}&cr=1&new_json=1`;
+  const res = await axios.get(url, { headers: headers() });
+  const list = (res.data && res.data.data && res.data.data.song && res.data.data.song.list) || [];
+  return list.map(toItem);
+}
+
+const norm = (s) => String(s || '').toLowerCase().replace(/\s|\(|\)|（|）|\[|\]/g, '');
+
+async function playableSibling(musicItem, prefixes) {
+  const key = String(musicItem.mid || musicItem.id);
+  const hit = siblingCache.get(key);
+  if (hit && Date.now() - hit.at < 5 * 60 * 1000) return hit.value;
+
+  const wantTitle = norm(musicItem.title);
+  const wantArtist = norm(musicItem.artist);
+  const wantDur = Number(musicItem.duration) > 0 ? Number(musicItem.duration) / 1000 : 0;
+  let list = [];
+  try {
+    list = await searchRaw(`${musicItem.title} ${musicItem.artist || ''}`.trim(), 1, 20);
+  } catch (e) {
+    siblingCache.set(key, { at: Date.now(), value: null });
+    return null;
+  }
+
+  // 只认同名 + 同歌手 + 时长接近的条目：那是同一首录音的另一个发行（专辑版/精选集版），
+  // 换过去用户听不出差别。同名不同版本（live、合唱、翻唱）一律不顶替——宁可报错也不骗人。
+  const sameRecording = list.filter((it) => {
+    if (String(it.mid) === key) return false;
+    if (norm(it.title) !== wantTitle) return false;
+    if (norm(it.artist) !== wantArtist) return false;
+    if (wantDur && Math.abs(Number(it.duration) / 1000 - wantDur) > 5) return false;
+    return true;
+  });
+
+  for (const cand of sameRecording.slice(0, 4)) {
+    try {
+      const got = await getVkey(cand.mid, prefixes);
+      if (got) {
+        siblingCache.set(key, { at: Date.now(), value: got });
+        return got;
+      }
+    } catch (e) { /* 换下一条 */ }
+  }
+  siblingCache.set(key, { at: Date.now(), value: null });
+  return null;
+}
+
 async function getVkey(mid, prefixes) {
   const v = userVars();
   const uin = v.QQ_UIN || '0';
@@ -100,22 +152,23 @@ module.exports = {
 
   async search(keyword, page = 1) {
     const limit = 30;
-    const url = `https://c.y.qq.com/soso/fcgi-bin/client_search_cp?w=${encodeURIComponent(keyword)}&format=json&n=${limit}&p=${page}&cr=1&new_json=1`;
-    const res = await axios.get(url, { headers: headers() });
-    const list = (res.data && res.data.data && res.data.data.song && res.data.data.song.list) || [];
-    return { isEnd: list.length < limit, data: list.map(toItem) };
+    const list = await searchRaw(keyword, page, limit);
+    return { isEnd: list.length < limit, data: list };
   },
 
   async getMediaSource(musicItem, quality) {
     const mid = musicItem.mid || musicItem.id;
     const prefixes = FILES[quality] || FILES.standard;
     const got = await getVkey(mid, prefixes);
-    if (!got) {
-      throw new Error(musicItem.vip
-        ? '这首歌是 QQ 音乐付费曲目，官方免登录不给地址：填插件设置里的 QQ_UIN / QQ_KEY，或换一个音源'
-        : 'QQ 音乐没有返回可用地址（可能已下架或地区限制）');
-    }
-    return got;
+    if (got) return got;
+
+    // 这条是付费条目：找同名（优先同歌手）的免费条目顶上
+    const alt = await playableSibling(musicItem, prefixes);
+    if (alt) return alt;
+
+    throw new Error(musicItem.vip
+      ? '这首歌在 QQ 音乐只有付费版本：到插件设置填自己的 QQ_UIN / QQ_KEY，或者换一个音源'
+      : 'QQ 音乐没有返回可用地址（可能已下架或地区限制）');
   },
 
   async getLyric(musicItem) {
