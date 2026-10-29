@@ -54,7 +54,7 @@ jobs:
 
           安卓提示「签名不一致」或「与已安装的应用冲突」时，先卸载旧版再装（收藏和歌单会清空，可以先在设置里导出备份）。
 
-          装好就有音源：内置 8 个实测能出声的源（5 个洛雪源 + 网易云官方直连、QQ音乐官方直连、腾讯音乐），首次启动自动装进「音源」页，不用自己找。VIP 曲目可在插件设置里填自己的 MUSIC_U / QQ_UIN / QQ_KEY。不想要就在「音源」页删掉，删掉的不会被自动加回来，底部「恢复内置音源」可以一次加回来。也可以继续导入自己的 MusicFree 订阅、洛雪源、JSON 配置源。
+          装好就有音源：内置 8 个实测能出声的源（5 个洛雪源 + 网易云官方直连、QQ音乐官方直连、腾讯音乐），首次启动自动装进「音源」页，不用自己找。VIP 曲目可在插件设置里填自己的 MUSIC_U / QQ_UIN / QQ_KEY。
           BODY
           id=$(gh api "repos/$REPO/releases" -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" -f name="空壳播放器 $TAG" -F draft=true -F body=@body.md --jq .id)
           echo "id=$id" >> "$GITHUB_OUTPUT"
