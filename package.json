@@ -1,7 +1,7 @@
 {
   "name": "shell-player",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.2.2",
   "type": "module",
   "description": "空壳播放器：可配置音源的音乐播放器（桌面 / 安卓 / 网页）",
   "scripts": {

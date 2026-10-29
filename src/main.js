@@ -15,7 +15,7 @@ import { enableRipple, burst, flyCover, Spinner, moveIndicator, fadeVolume } fro
 import { enableReorder, enableSwipe } from './ui/gestures.js';
 import { initPlatform, isTauri, isMobile, isDesktopApp, platformName, downloadTrack, fileSrc, readTextFile, desktopLyrics, nativeMedia, nativeLyric, desktopApp, localMusic, appUpdate, openExternal, globalKeys } from './platform.js';
 
-const VERSION = '0.2.1';
+const VERSION = '0.2.2';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const audio = $('#audio');

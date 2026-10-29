@@ -14,8 +14,9 @@ import xinghai from './lx/xinghai.js?raw';
 import wyOfficial from './musicfree/wy-official.js?raw';
 import qqOfficial from './musicfree/qq-official.js?raw';
 import qqTengxun from './musicfree/qq-tengxun.js?raw';
+import kgOfficial from './musicfree/kg-official.js?raw';
 
-export const BUNDLE_VERSION = 2;
+export const BUNDLE_VERSION = 3;
 
 /**
  * kind: 'lx' 只提供播放地址与歌词（配合能搜索的音源使用）
@@ -31,6 +32,7 @@ export const BUNDLED_SOURCES = [
   { slug: 'wy-official', kind: 'musicfree', name: '网易云 · 官方直连', note: '实测可播，可填 MUSIC_U', code: wyOfficial },
   { slug: 'qq-official', kind: 'musicfree', name: 'QQ音乐 · 官方直连', note: '免费曲目可播，VIP 需填 QQ_UIN / QQ_KEY', code: qqOfficial },
   { slug: 'qq-tengxun', kind: 'musicfree', name: 'QQ音乐 · 腾讯音乐', note: '实测可播的第三方源', code: qqTengxun },
+  { slug: 'kg-official', kind: 'musicfree', name: '酷狗 · 官方搜索', note: '配合洛雪源取无损（实测 941kbps flac）', code: kgOfficial },
 ];
 
 export const bundledId = (item) => `b:${item.kind}:${item.slug}`;

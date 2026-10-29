@@ -1,6 +1,6 @@
 [package]
 name = "shell-player"
-version = "0.2.1"
+version = "0.2.2"
 description = "空壳播放器：可配置音源的音乐播放器"
 authors = ["Makima667"]
 edition = "2021"
