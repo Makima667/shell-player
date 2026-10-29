@@ -6,7 +6,7 @@
   "generator": "scripts/build-index.mjs",
   "counts": {
     "lx": 15,
-    "musicfree": 33
+    "musicfree": 34
   },
   "endpoints": {
     "lxIndex": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
@@ -1470,6 +1470,37 @@
         "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-nianxin.js",
         "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-nianxin.js",
         "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-nianxin.js"
+      }
+    },
+    {
+      "slug": "qq-official",
+      "name": "QQ音乐",
+      "label": "QQ音乐 · 官方直连（免费曲目实测可播；VIP 需填 UIN/KEY）",
+      "platform": "QQ音乐",
+      "version": "1.0.0",
+      "author": "self-hosted",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "userVariables",
+        "search",
+        "getMediaSource",
+        "getLyric"
+      ],
+      "valid": true,
+      "bytes": 5406,
+      "sha256": "4e1b951e298432b0148cd9985edacfff7912af40add34fa9b43f8fe5cdd615c6",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-official.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-official.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/qq-official.js"
       }
     },
     {

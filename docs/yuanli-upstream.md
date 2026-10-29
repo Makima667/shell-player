@@ -78,4 +78,17 @@
 - 在插件设置里填 `MUSIC_U`（网易云 Cookie 里那一段），才能按你账号权限拿 VIP 曲目的 320k / flac；不填就只能播免费曲目——这本就是官方接口的边界
 - 周杰伦这类独家版权曲目网易云**本身没有**，搜不到不是插件问题（实测「晴天」前四条全是翻唱）
 
-酷狗 / QQ 的官方直链需要会员票据，公共中转（vkeys、gdstudio、meting 等）要么 403、要么域名没了，所以暂时没有等价的直连版本——这一块只能靠你自己的会员 Cookie 或第三方源。
+### QQ 音乐（同一天补上）
+
+`u.y.qq.com/cgi-bin/musicu.fcg` 的 `vkey.GetVkeyServer` 对**未登录请求**也签发部分曲目的直链，这就是 `sources/musicfree/plugins/qq-official.js`：
+
+- 搜索：`c.y.qq.com/soso/fcgi-bin/client_search_cp`（新 JSON），实测 0.98s 出 30 条，`pay` 字段可直接判断是否付费
+- 取地址：先试 M800（320k）→ M500（128k）→ F000（flac），第一个有 `vkey` 的胜出
+- 免费曲目实测：`206 audio/mpeg`，走 `aqqmusic.tc.qq.com` / `ws.stream.qqmusic.qq.com`
+- VIP / 数字专辑：官方返回空 vkey，插件直接说「付费曲目，官方不给地址」，**不返回放不出来的假地址**
+- 歌词：`fcg_query_lyric_new.fcg`，实测 1388 字节标准 LRC
+- 填 `QQ_UIN` + `QQ_KEY`（Cookie 的 `qm_keyst`）后带上你自己的票据，高档位才会放行
+
+公共中转的实测结论（为什么不用它们兜底）：`api.vkeys.cn` 对 QQ 只给**试听片段**（0.92MB、`quality: 音乐试听`、29kbps），`gdstudio` 连接超时，`meting`（injahow / qijieya / i-meto）全部返回空或 401。所以插件不接这些中转，宁可明确报错。
+
+酷狗仍然没有可用的官方直链：`m.kugou.com/getSongInfo`、`wwwapi.kugou.com/play/songinfo`（签名已按官方算法算对）、`trackercdn` 三条通道对热门曲目一律返回「需要付费」，签名接口本身是通的——缺的还是会员票据。

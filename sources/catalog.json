@@ -83,6 +83,11 @@
       "note": "网易云 · 官方直连（自建，实测可播；可填 MUSIC_U）"
     },
     {
+      "slug": "qq-official",
+      "tier": "primary",
+      "note": "QQ音乐 · 官方直连（免费曲目实测可播；VIP 需填 UIN/KEY）"
+    },
+    {
       "slug": "wy-yinyue",
       "tier": "primary",
       "note": "网易云 · 主源（2025.09 版）"

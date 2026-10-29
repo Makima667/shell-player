@@ -2,7 +2,7 @@
 
 > 本文件由 `npm run build` 自动生成，请勿手工编辑。
 
-共 **15** 个落雪音源、**33** 个 MusicFree 插件。
+共 **15** 个落雪音源、**34** 个 MusicFree 插件。
 
 ## 落雪音乐（LX Music）
 
@@ -45,6 +45,7 @@
 | `sources/musicfree/plugins/qq-feivip.js` | QQ音乐 | QQ音乐（混淆） | 0.2.5 | 主推 | QQ音乐 · 非VIP 渠道（代码混淆） |
 | `sources/musicfree/plugins/qq-mao.js` | QQ | QQ | 0.2.2 | 备用 | QQ音乐 · 猫 |
 | `sources/musicfree/plugins/qq-nianxin.js` | QQ(念心音源) | QQ(念心音源) | 1.0.0 | 主推 | QQ音乐 · 念心 |
+| `sources/musicfree/plugins/qq-official.js` | QQ音乐 | QQ音乐 | 1.0.0 | 主推 | QQ音乐 · 官方直连（免费曲目实测可播；VIP 需填 UIN/KEY） |
 | `sources/musicfree/plugins/qq-tengxun.js` | 腾讯音乐 | 腾讯音乐 | 2025.09.13 | 主推 | 腾讯音乐 · 全量 |
 | `sources/musicfree/plugins/qq-yuanli.js` | 元力QQ | 元力QQ（混淆） | 1.1.1 | 备用 | QQ音乐 · 元力（代码混淆） |
 | `sources/musicfree/plugins/qs-kaixin.js` | 开心汽水 | 开心汽水（混淆） | 0.1.5 | 备用 | 开心汽水（代码混淆） |
