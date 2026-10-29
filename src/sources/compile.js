@@ -51,14 +51,27 @@ export function detectKind(code) {
   return 'script';
 }
 
+// 某些播放器专用的“线路列表”：只写了接口函数名（searchApi / detailApi），没有地址也没有代码，别的播放器用不了
+function lineConfig(cfg) {
+  const lines = cfg && Array.isArray(cfg.lines) ? cfg.lines : null;
+  if (!lines || !lines.some(l => l && typeof l === 'object' && (typeof l.searchApi === 'string' || typeof l.detailApi === 'string'))) return;
+  const e = new Error(`这是某个播放器专用的线路列表（${lines.length} 条线路），里面只有接口名字，没有接口地址和代码，只能在它对应的那个播放器里用，这里导入不了。请换 MusicFree 插件（.js 或订阅链接）或洛雪自定义源（.js）。`);
+  e.lineConfig = true;
+  throw e;
+}
+
 /** @param {{ userVars?: () => object, onUpdateAlert?: Function, env?: string }} opts */
 export async function compileSource(code, opts = {}) {
   const t = String(code || '').trim();
   if (!t) throw new Error('内容是空的');
+  // 有的文件在 JSON 前面加了一段 /* @name … */ 注释
+  const body = t.replace(/^(\s*(\/\*[\s\S]*?\*\/|\/\/[^\n]*))+\s*/, '');
+  if (body !== t && body.startsWith('{')) { try { lineConfig(JSON.parse(body)); } catch (e) { if (e.lineConfig) throw e; } }
   if (t.startsWith('{')) {
     let cfg;
     try { cfg = JSON.parse(t); } catch (e) { throw new Error('JSON 格式不正确：' + e.message); }
     if (isSubscription(cfg)) throw new SubscriptionError(cfg.plugins);
+    lineConfig(cfg);
     return compileJson(cfg);
   }
   if (looksLikeLx(t)) return compileLx(t, opts);
