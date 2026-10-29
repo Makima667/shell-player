@@ -13,9 +13,9 @@ import { TEMPLATES, DOC_HTML } from './ui/docs.js';
 import { extractColors, Visualizer } from './ui/fx.js';
 import { enableRipple, burst, flyCover, Spinner, moveIndicator, fadeVolume } from './ui/anim.js';
 import { enableReorder, enableSwipe } from './ui/gestures.js';
-import { initPlatform, isTauri, isMobile, isDesktopApp, platformName, downloadTrack, fileSrc, readTextFile, desktopLyrics, nativeMedia, nativeLyric, desktopApp, localMusic, appUpdate, openExternal } from './platform.js';
+import { initPlatform, isTauri, isMobile, isDesktopApp, platformName, downloadTrack, fileSrc, readTextFile, desktopLyrics, nativeMedia, nativeLyric, desktopApp, localMusic, appUpdate, openExternal, globalKeys } from './platform.js';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const audio = $('#audio');
@@ -60,7 +60,7 @@ const S = {
     quality: '320k', dlQuality: 'same', failover: true, skipOnError: true, theme: 'system', motion: true, fade: true,
     lyricTrans: true, lyricSize: 'm', dlyric: false, dlyricLock: false, dlyricSize: 34, dlyricColor: 'cover', closeToTray: true,
     autoUpdateSources: true, autoCheckUpdate: true, localMinDur: 30,
-    mlyric: false, mlyricLock: false, mlyricSize: 17, tickerLyric: true
+    mlyric: false, mlyricLock: false, mlyricSize: 17, tickerLyric: true, globalKeys: true
   }, store.get('settings', {})),
   history: store.get('history', []),
   searchHist: store.get('searchHist', []),
@@ -1015,6 +1015,7 @@ function renderSettings() {
     row('显示翻译歌词', '有翻译时显示在原文下面，桌面歌词也一样', sw('lyricTrans')),
     row('歌词字号', '正在播放页的歌词大小', seg('lyricSize', [['s', '小'], ['m', '中'], ['l', '大']])),
     isDesktopApp() ? row('关闭时最小化到托盘', '点窗口的关闭按钮后继续在后台播放，从托盘图标打开', sw('closeToTray')) : '',
+    isDesktopApp() ? row('全局快捷键', 'Ctrl + Alt + P 播放暂停，Ctrl + Alt + ← / → 切歌，其他组合见快捷键表（按 ?）。窗口不在前台也能用', sw('globalKeys')) : '',
     isDesktopApp() ? row('桌面歌词', '置顶显示的透明歌词窗口，可拖动', sw('dlyric')) : '',
     isDesktopApp() ? row('锁定桌面歌词', '锁定后鼠标可以穿透歌词窗口', sw('dlyricLock')) : '',
     isDesktopApp() ? row('桌面歌词字号', `${st.dlyricSize}px`, `<input type="range" id="dlSize" min="20" max="64" value="${st.dlyricSize}" style="width:140px;--p:${(st.dlyricSize - 20) / 44 * 100}%">`) : '',
@@ -1058,8 +1059,28 @@ function applySettings() {
     else desktopLyrics.send({ hue: getComputedStyle(document.documentElement).getPropertyValue('--h').trim() || 228 });
     $('[data-now="dlyric"]').classList.toggle('on', st.dlyric);
     pushDesktopLyric(true);
+    applyGlobalKeys();
   }
 }
+// 全局快捷键（和网易云一样的组合，窗口不在前台也能用）
+const GLOBAL_KEYS = [
+  ['Control+Alt+P', '播放 / 暂停', () => togglePlay()],
+  ['Control+Alt+Left', '上一首', () => playPrev()],
+  ['Control+Alt+Right', '下一首', () => playNext()],
+  ['Control+Alt+Up', '音量加', () => setVolume(userVol() + 0.05)],
+  ['Control+Alt+Down', '音量减', () => setVolume(userVol() - 0.05)],
+  ['Control+Alt+L', '喜欢 / 取消喜欢', () => { const t = curTrack(); if (t) toggleLike(t, $('#full').hidden ? $('#barLike') : $('[data-now="like"]')); }],
+  ['Control+Alt+D', '桌面歌词开 / 关', () => { S.settings.dlyric = !S.settings.dlyric; saveSettings(); applySettings(); }]
+];
+let globalKeysOn = null;
+async function applyGlobalKeys() {
+  const on = !!S.settings.globalKeys;
+  if (on === globalKeysOn) return;
+  globalKeysOn = on;
+  const failed = await globalKeys.set(on ? Object.fromEntries(GLOBAL_KEYS.map(([k, , f]) => [k, f])) : {}).catch(() => []);
+  if (failed.length) toast('这些全局快捷键被别的软件占用了：' + failed.map(keyLabel).join('、'), 5000);
+}
+const keyLabel = k => k.replace('Control', 'Ctrl').replace('Left', '←').replace('Right', '→').replace('Up', '↑').replace('Down', '↓');
 async function exportBackup() {
   const data = { app: 'shell-player', version: VERSION, at: new Date().toISOString(), sources: sources.entries, disabled: [...sources.disabled], sourceVars: sources.vars, playlists: S.playlists, settings: S.settings, history: S.history };
   const text = JSON.stringify(data, null, 2);
@@ -1631,7 +1652,8 @@ const KEYS = [
   ['/ 或 Ctrl + K', '搜索'], ['L', '喜欢 / 取消喜欢'], ['M', '静音'], ['F', '打开 / 收起正在播放'], ['Esc', '关闭弹窗、菜单、正在播放'], ['?', '显示这张表']
 ];
 function showKeys() {
-  openDialog({ title: '快捷键', narrow: true, body: `<div class="keys">${KEYS.map(([k, d]) => `<div><span>${k.split(' ').map(x => /^[/+]$|^或$/.test(x) ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join(' ')}</span><span class="muted">${d}</span></div>`).join('')}</div>` });
+  const keys = isDesktopApp() && S.settings.globalKeys ? [...KEYS, ...GLOBAL_KEYS.map(([k, d]) => [keyLabel(k).replace(/\+/g, ' + '), d + '（全局）'])] : KEYS;
+  openDialog({ title: '快捷键', narrow: true, body: `<div class="keys">${keys.map(([k, d]) => `<div><span>${k.split(' ').map(x => /^[/+]$|^或$/.test(x) ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join(' ')}</span><span class="muted">${d}</span></div>`).join('')}</div>` });
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (menuOpen) return closeMenu(); if (!$('#modal').hidden) return closeDialog(); if (!$('#full').hidden) return closeFull(); }

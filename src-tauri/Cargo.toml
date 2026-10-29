@@ -1,6 +1,6 @@
 [package]
 name = "shell-player"
-version = "0.2.0"
+version = "0.2.1"
 description = "空壳播放器：可配置音源的音乐播放器"
 authors = ["Makima667"]
 edition = "2021"
@@ -33,6 +33,7 @@ tauri-plugin-window-state = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+tauri-plugin-global-shortcut = "2"
 
 [profile.release]
 codegen-units = 1
