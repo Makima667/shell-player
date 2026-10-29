@@ -78,6 +78,11 @@
   ],
   "musicfree": [
     {
+      "slug": "wy-official",
+      "tier": "primary",
+      "note": "网易云 · 官方直连（自建，实测可播；可填 MUSIC_U）"
+    },
+    {
       "slug": "wy-yinyue",
       "tier": "primary",
       "note": "网易云 · 主源（2025.09 版）"

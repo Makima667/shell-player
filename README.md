@@ -3,7 +3,7 @@
 这个仓库只做一件事：**把音源直接塞进你的播放器，装完就能听。**
 
 - **15 个落雪音乐（LX Music）自定义音源**，桌面版由脚本直接写进配置，重启即生效；
-- **32 个 MusicFree 插件**，一条订阅地址全量导入；
+- **33 个 MusicFree 插件**，一条订阅地址全量导入；
 - 每个文件都在隔离进程里跑过一遍（语法 → 初始化 → 导出接口），通过才收录。
 
 清单：[docs/SOURCES.md](docs/SOURCES.md)（由脚本生成，含平台、版本、混淆标注）。
@@ -51,9 +51,21 @@ https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/
 | 生态 | 数量 | 覆盖 |
 | --- | --- | --- |
 | 落雪音源 | 15 | 网易云 / QQ音乐 / 酷狗 / 酷我 / 咪咕 五平台聚合，含单平台直连备胎 |
-| MusicFree 插件 | 32 | 网易云 7、QQ音乐 5、酷狗 4、酷我 4、咪咕 1、汽水 3、B站 / YouTube / 猫耳 / 喜马拉雅 / 千千 / GD / 云云音乐 等 |
+| MusicFree 插件 | 33 | 网易云 8（含官方直连自建源）、QQ音乐 5、酷狗 4、酷我 4、咪咕 1、汽水 3、B站 / YouTube / 猫耳 / 喜马拉雅 / 千千 / GD / 云云音乐 等 |
 
 平台、版本、是否混淆都在 [docs/SOURCES.md](docs/SOURCES.md) 里列清楚——混过的代码没法审计，标注出来由你决定用不用。
+
+## 上游失效记录（元力 / 青听 / 海棠）
+
+2026-10-29 逆向并实测了青听（`kstore.vip/QingMusic/music.json`）与海棠（`musicapi.haitangw.net/music.json`）这两条「音源」：它们是同一份配置的两个镜像，配置本身只有开关，出地址全靠 `yinyue.haitangw.net` 的解析接口——而那三个接口现在全是 404，备胎 `share.duanx.cn` 域名已不存在。
+
+完整链路、逐项实测数据、以及为什么「不稳定」的定性，见 [docs/yuanli-upstream.md](docs/yuanli-upstream.md)；随时复测：
+
+```bash
+node scripts/check-upstream.mjs   # 把这条链路 11 个环节逐个打一遍
+```
+
+兜底方案是 `sources/musicfree/plugins/wy-official.js`：网易官方直连（不经过任何中转），实测搜索 0.4–1.2s、直链 `Range` 请求回 206，填了 `MUSIC_U` 就能按账号权限拿 320k / flac。
 
 ## 维护
 

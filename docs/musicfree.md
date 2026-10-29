@@ -14,9 +14,9 @@ https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plu
 
 ```json
 {
-  "desc": "Shell Player 音源库 · MusicFree 插件订阅（32 个）",
+  "desc": "Shell Player 音源库 · MusicFree 插件订阅（33 个）",
   "plugins": [
-    { "name": "网易云 · 主源（2025.09 版）", "url": "https://cdn.jsdelivr.net/gh/...", "version": "2025.09.14" }
+    { "name": "网易云 · 官方直连（自建，实测可播；可填 MUSIC_U）", "url": "https://fastly.jsdelivr.net/gh/...", "version": "1.0.0" }
   ]
 }
 ```

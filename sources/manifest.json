@@ -6,7 +6,7 @@
   "generator": "scripts/build-index.mjs",
   "counts": {
     "lx": 15,
-    "musicfree": 32
+    "musicfree": 33
   },
   "endpoints": {
     "lxIndex": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
@@ -1829,6 +1829,38 @@
         "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-nianxin.js",
         "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-nianxin.js",
         "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-nianxin.js"
+      }
+    },
+    {
+      "slug": "wy-official",
+      "name": "网易云",
+      "label": "网易云 · 官方直连（自建，实测可播；可填 MUSIC_U）",
+      "platform": "网易云",
+      "version": "1.0.0",
+      "author": "self-hosted",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "userVariables",
+        "search",
+        "getMediaSource",
+        "getLyric",
+        "getMusicInfo"
+      ],
+      "valid": true,
+      "bytes": 4319,
+      "sha256": "c708925586732aef0c04dbac6d7ce8f62221dd58265c553ba397f0ede6fad939",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-official.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/wy-official.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/wy-official.js"
       }
     },
     {

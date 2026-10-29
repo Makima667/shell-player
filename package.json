@@ -9,7 +9,8 @@
     "validate": "node scripts/validate.mjs",
     "test": "node --test tests/install.test.mjs",
     "install:lx": "node scripts/install.mjs",
-    "urls": "node scripts/install.mjs --print-urls"
+    "urls": "node scripts/install.mjs --print-urls",
+    "check": "node scripts/check-upstream.mjs"
   },
   "engines": {
     "node": ">=20"

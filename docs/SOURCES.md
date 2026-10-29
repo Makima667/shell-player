@@ -2,7 +2,7 @@
 
 > 本文件由 `npm run build` 自动生成，请勿手工编辑。
 
-共 **15** 个落雪音源、**32** 个 MusicFree 插件。
+共 **15** 个落雪音源、**33** 个 MusicFree 插件。
 
 ## 落雪音乐（LX Music）
 
@@ -54,6 +54,7 @@
 | `sources/musicfree/plugins/wy-diantai.js` | 网易云电台 | 网易云电台 | 0.0.2 | 备用 | 网易云电台 |
 | `sources/musicfree/plugins/wy-feivip.js` | 网易云音乐 | 网易云音乐 | 0.2.3 | 备用 | 网易云 · 非VIP 渠道 |
 | `sources/musicfree/plugins/wy-nianxin.js` | 网易(念心音源) | 网易(念心音源) | 1.0.0 | 备用 | 网易云 · 念心 |
+| `sources/musicfree/plugins/wy-official.js` | 网易云 | 网易云 | 1.0.0 | 主推 | 网易云 · 官方直连（自建，实测可播；可填 MUSIC_U） |
 | `sources/musicfree/plugins/wy-yinyue.js` | 网易音乐 | 网易音乐 | 2025.09.14 | 主推 | 网易云 · 主源（2025.09 版） |
 | `sources/musicfree/plugins/wy-yuanli.js` | 元力WY | 元力WY（混淆） | 1.1.1 | 主推 | 网易云 · 元力（代码混淆） |
 | `sources/musicfree/plugins/wy-zhuanji.js` | 网易专辑 | 网易专辑 | 0.0.1 | 备用 | 网易专辑 |
