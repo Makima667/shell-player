@@ -6,7 +6,7 @@
   "generator": "scripts/build-index.mjs",
   "counts": {
     "lx": 15,
-    "musicfree": 34
+    "musicfree": 35
   },
   "endpoints": {
     "lxIndex": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/lx/index.json",
@@ -1719,6 +1719,36 @@
         "searchMs": 4574,
         "urlMs": null,
         "playStatus": null
+      }
+    },
+    {
+      "slug": "kg-official",
+      "name": "酷狗",
+      "label": "酷狗 · 官方搜索 + 洛雪源接力（无损实测 941kbps）",
+      "platform": "酷狗",
+      "version": "1.0.0",
+      "author": "self-hosted",
+      "tier": "primary",
+      "obfuscated": false,
+      "exportStyle": "named",
+      "methods": [
+        "platform",
+        "version",
+        "author",
+        "srcUrl",
+        "cacheControl",
+        "hints",
+        "search",
+        "getMediaSource",
+        "getLyric"
+      ],
+      "valid": true,
+      "bytes": 3677,
+      "sha256": "a9e510f2e6fe46c52d9a93ff281ff13964bd091391c39fe3528cd6055b4b5acd",
+      "urls": {
+        "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-official.js",
+        "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/kg-official.js",
+        "raw": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-official.js"
       }
     },
     {

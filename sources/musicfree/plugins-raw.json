@@ -1,5 +1,5 @@
 {
-  "desc": "Shell Player 音源库 · MusicFree 插件订阅（34 个）",
+  "desc": "Shell Player 音源库 · MusicFree 插件订阅（35 个）",
   "plugins": [
     {
       "name": "哔哩哔哩 · 支持 Cookie",
@@ -100,6 +100,11 @@
       "name": "酷狗 · 简云",
       "url": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-jianyun.js",
       "version": "2.3.0"
+    },
+    {
+      "name": "酷狗 · 官方搜索 + 洛雪源接力（无损实测 941kbps）",
+      "url": "https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/plugins/kg-official.js",
+      "version": "1.0.0"
     },
     {
       "name": "QQ音乐 · 非VIP 渠道（代码混淆）",

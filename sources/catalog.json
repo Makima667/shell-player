@@ -88,6 +88,11 @@
       "note": "QQ音乐 · 官方直连（免费曲目实测可播；VIP 需填 UIN/KEY）"
     },
     {
+      "slug": "kg-official",
+      "tier": "primary",
+      "note": "酷狗 · 官方搜索 + 洛雪源接力（无损实测 941kbps）"
+    },
+    {
       "slug": "wy-yinyue",
       "tier": "primary",
       "note": "网易云 · 主源（2025.09 版）"

@@ -2,7 +2,7 @@
 
 > 本文件由 `npm run build` 自动生成，请勿手工编辑。
 
-共 **15** 个落雪音源、**34** 个 MusicFree 插件。
+共 **15** 个落雪音源、**35** 个 MusicFree 插件。
 
 ## 落雪音乐（LX Music）
 
@@ -48,6 +48,7 @@
 | `sources/musicfree/plugins/wy-bimiao.js` | 网易(bimiao音源) | 网易(bimiao音源) | 1.1 | 备用 | 网易云 · bimiao |
 | `sources/musicfree/plugins/wy-nianxin.js` | 网易(念心音源) | 网易(念心音源) | 1.0.0 | 备用 | 网易云 · 念心 |
 | `sources/musicfree/plugins/kg-jianyun.js` | KuGou Lite | KuGou Lite | 2.3.0 | 主推 | 酷狗 · 简云 |
+| `sources/musicfree/plugins/kg-official.js` | 酷狗 | 酷狗 | 1.0.0 | 主推 | 酷狗 · 官方搜索 + 洛雪源接力（无损实测 941kbps） |
 | `sources/musicfree/plugins/qq-feivip.js` | QQ音乐 | QQ音乐（混淆） | 0.2.5 | 主推 | QQ音乐 · 非VIP 渠道（代码混淆） |
 | `sources/musicfree/plugins/qq-nianxin.js` | QQ(念心音源) | QQ(念心音源) | 1.0.0 | 主推 | QQ音乐 · 念心 |
 | `sources/musicfree/plugins/ximalaya.js` | 喜马拉雅(笭鬼鬼API) | 喜马拉雅(笭鬼鬼API) | 1.6 | 主推 | 喜马拉雅 |
