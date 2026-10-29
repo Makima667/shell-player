@@ -1495,8 +1495,8 @@
         "getLyric"
       ],
       "valid": true,
-      "bytes": 5406,
-      "sha256": "4e1b951e298432b0148cd9985edacfff7912af40add34fa9b43f8fe5cdd615c6",
+      "bytes": 7547,
+      "sha256": "be733eabf0121ae5f52000a94a5452fbf093bec46875d80622aa064c3a1ce17a",
       "urls": {
         "jsdelivr": "https://cdn.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-official.js",
         "fastly": "https://fastly.jsdelivr.net/gh/Makima667/shell-player@main/sources/musicfree/plugins/qq-official.js",
