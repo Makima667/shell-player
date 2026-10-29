@@ -51,7 +51,20 @@ https://raw.githubusercontent.com/Makima667/shell-player/main/sources/musicfree/
 | 生态 | 数量 | 覆盖 |
 | --- | --- | --- |
 | 落雪音源 | 15 | 网易云 / QQ音乐 / 酷狗 / 酷我 / 咪咕 五平台聚合，含单平台直连备胎 |
-| MusicFree 插件 | 33 | 网易云 8（含官方直连自建源）、QQ音乐 5、酷狗 4、酷我 4、咪咕 1、汽水 3、B站 / YouTube / 猫耳 / 喜马拉雅 / 千千 / GD / 云云音乐 等 |
+| MusicFree 插件 | 34 | 网易云 8（含官方直连自建源）、QQ音乐 6（含官方直连自建源）、酷狗 4、酷我 4、咪咕 1、汽水 3、B站 / YouTube / 猫耳 / 喜马拉雅 / 千千 / GD / 云云音乐 等 |
+
+### 存活率（实测，不是清单长度）
+
+`npm run health` 会拿应用自己的运行时把每个插件真跑一遍：编译 → 搜索 → 取第一条的播放地址 → 用 `Range: bytes=0-1023` 确认真的回 206。2026-10-29 的结果：
+
+| 结论 | 数量 | 说明 |
+| --- | --- | --- |
+| 能出声 | 9 | 搜索有结果、地址可播 |
+| 搜到但没地址 | 5 | 解析后端挂了（元力系、汽水…） |
+| 地址播不了 | 5 | 返回的域名连不上或 403 |
+| 搜索空 / 请求失败 | 15 | 接口改了或整站不通 |
+
+结果写进 [`sources/health.json`](sources/health.json)，`npm run build` 会据此把**能用的排到订阅最前面**，`docs/SOURCES.md` 里每条也带结论——所以「订阅里 34 个」不等于「34 个都能用」，表里能看出谁是真活的。
 
 平台、版本、是否混淆都在 [docs/SOURCES.md](docs/SOURCES.md) 里列清楚——混过的代码没法审计，标注出来由你决定用不用。
 
@@ -70,11 +83,16 @@ node scripts/check-upstream.mjs   # 把这条链路 11 个环节逐个打一遍
 ## 维护
 
 ```bash
-npm run build      # 重新生成 manifest / 订阅文件 / 音源清单
+npm install        # 体检要用的 crypto-js / cheerio / he / dayjs / big-integer
+npm run health     # 真跑每个插件：搜索 → 取地址 → Range 验播放，写 sources/health.json
+npm run build      # 重新生成 manifest / 订阅文件 / 音源清单（按体检结论排序）
 npm run validate   # 校验全部音源 + 确认生成文件没有过期
 npm test           # 安装脚本的往返测试（写入→还原→幂等→损坏保护）
+npm run check      # 上游链路体检（青听/元力/海棠那块）
 npm run urls       # 打印订阅地址
 ```
+
+音源质量是这么守的：`health` 出结论 → `build` 据此排序并在清单里标注 → 连续两轮都挂的，直接从内置和订阅里撤掉（0.2.1 撤了 8 个）。
 
 - 收录/取舍写在 [`sources/catalog.json`](sources/catalog.json)（slug、等级、一句话说明），其余字段（版本、平台、哈希、大小）全部从文件本身解析，不手填。
 - 加音源：文件丢进 `sources/lx/` 或 `sources/musicfree/plugins/`，在 `catalog.json` 补一条，`npm run build`。

@@ -10,9 +10,17 @@
     "test": "node --test tests/install.test.mjs",
     "install:lx": "node scripts/install.mjs",
     "urls": "node scripts/install.mjs --print-urls",
-    "check": "node scripts/check-upstream.mjs"
+    "check": "node scripts/check-upstream.mjs",
+    "health": "node scripts/health.mjs"
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "big-integer": "^1.6.52",
+    "cheerio": "^1.0.0",
+    "crypto-js": "^4.2.0",
+    "dayjs": "^1.11.13",
+    "he": "^1.2.0"
   }
 }

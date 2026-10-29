@@ -83,8 +83,25 @@ function buildMusicFree(catalog) {
 
 export function buildModel() {
   const catalog = readCatalog();
+  // 体检结果（sources/health.json，由 npm run health 生成）决定订阅里的排序与标注：
+  // 能出声的排前面，用户点开的第一个音源就不会是死的。
+  const healthPath = path.join(ROOT, 'sources/health.json');
+  const health = fs.existsSync(healthPath) ? JSON.parse(fs.readFileSync(healthPath, 'utf8')) : null;
+  const healthOf = new Map((health?.results || []).map((r) => [r.slug, r]));
+  const RANK = { ok: 0, 'no-url': 1, unplayable: 1, empty: 2, down: 3, broken: 3, 'no-search': 2, 'no-url-api': 2 };
+
   const lx = buildLx(catalog);
-  const musicfree = buildMusicFree(catalog);
+  const musicfree = buildMusicFree(catalog).map((p) => {
+    const h = healthOf.get(p.slug);
+    return h
+      ? { ...p, health: { verdict: h.verdict, searchMs: h.search?.ms ?? null, urlMs: h.url?.ms ?? null, playStatus: h.play?.status ?? null } }
+      : p;
+  });
+  if (health) {
+    const rank = (p) => RANK[p.health?.verdict] ?? 2;
+    const tierRank = (p) => (p.tier === 'primary' ? 0 : 1);
+    musicfree.sort((a, b) => rank(a) - rank(b) || tierRank(a) - tierRank(b) || a.slug.localeCompare(b.slug));
+  }
 
   const subscriptionOf = (key) => ({
     desc: `Shell Player 音源库 · MusicFree 插件订阅（${musicfree.length} 个）`,
