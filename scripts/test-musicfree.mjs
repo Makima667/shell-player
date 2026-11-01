@@ -13,7 +13,7 @@ import { readFile, readdir, stat, writeFile, appendFile } from 'node:fs/promises
 import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runCommonJs, adaptMusicFree, isMusicFreePlugin, isSubscription } from '../src/sources/musicfree.js';
-import { setFetch, nativeLikeFetch, PLUGIN_UA } from '../src/core/http.js';
+import { setFetch, nativeLikeFetch, BROWSER_UA } from '../src/core/http.js';
 
 // 和 App 里一样的默认请求头（Node 本来就不带 Origin）
 setFetch(nativeLikeFetch(globalThis.fetch, { dropOrigin: false }));
@@ -80,7 +80,7 @@ async function probe(url, headers = {}) {
   const timer = setTimeout(() => ctl.abort(), opt.timeout);
   try {
     // 真正播放时是 audio 元素去拉，带的是浏览器 UA
-    const r = await fetch(url, { headers: { 'User-Agent': PLUGIN_UA, ...headers, Range: 'bytes=0-4095' }, signal: ctl.signal, redirect: 'follow' });
+    const r = await fetch(url, { headers: { 'User-Agent': BROWSER_UA, ...headers, Range: 'bytes=0-4095' }, signal: ctl.signal, redirect: 'follow' });
     const type = r.headers.get('content-type') || '';
     const reader = r.body?.getReader();
     let buf = new Uint8Array(0);

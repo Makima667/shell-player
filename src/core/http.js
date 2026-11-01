@@ -4,10 +4,13 @@ let fetchImpl = (...a) => globalThis.fetch(...a);
 export function setFetch(f) { fetchImpl = f; }
 
 // 让音源插件的请求尽量像在原生 App 里发出：
-// - 插件没指定 User-Agent 时用常见浏览器的，而不是 Tauri HTTP 插件默认的 tauri-plugin-http/x.y.z（B 站等会直接拒绝）
+// - 插件没指定 User-Agent 时用 okhttp 的（MusicFree / 洛雪安卓版就是这个 UA，插件都是照它调的），
+//   而不是 Tauri HTTP 插件默认的 tauri-plugin-http/x.y.z。实测浏览器 UA 反而会被 B 站搜索拦（412）
 // - dropOrigin：Tauri 会自动带上 Origin: tauri://localhost 一类的来源，部分接口因此报错；
 //   传空字符串时它会把 Origin 去掉（需要 unsafe-headers 特性，Cargo.toml 已开启）
-export const PLUGIN_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+export const PLUGIN_UA = 'okhttp/4.9.2';
+// audio 元素拉流时带的是 WebView 自己的 UA，体检脚本模拟它时用这个
+export const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 export function nativeLikeFetch(f, { dropOrigin = true } = {}) {
   return (input, init = {}) => {
     const headers = new Headers(init.headers || {});
