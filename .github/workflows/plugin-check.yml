@@ -1,0 +1,52 @@
+name: 插件体检（MusicFree）
+
+# 用播放器自己的插件运行环境，把 MusicFree 插件挨个跑一遍：加载、搜索、取地址、地址能否出声、歌词。
+# 结果在这次运行的 Summary 里。注意 GitHub 的机器在海外，国内平台常常不给海外 IP 播放地址，
+# 「取地址 / 出声」失败不一定代表在国内用不了；「加载失败」则一定是兼容问题。
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: '要测的插件：bundled = 内置；main = main 分支 sources/musicfree/plugins；也可以填订阅或插件 URL，空格分隔'
+        default: 'bundled main'
+      keyword:
+        description: '搜索关键词'
+        default: '晴天'
+  push:
+    branches: [feat/initial-app]
+    paths: ['scripts/test-musicfree.mjs', '.github/workflows/plugin-check.yml', 'src/sources/musicfree.js', 'src/sources/shims.js']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 体检
+        env:
+          TARGETS: ${{ inputs.targets || 'bundled main' }}
+          KEYWORD: ${{ inputs.keyword || '晴天' }}
+        run: |
+          set -f
+          list=()
+          for t in $TARGETS; do
+            case "$t" in
+              bundled) list+=(src/sources/bundled/musicfree/) ;;
+              main)
+                git fetch --depth=1 origin main
+                mkdir -p /tmp/main && git archive FETCH_HEAD sources/musicfree/plugins | tar -x -C /tmp/main
+                list+=(/tmp/main/sources/musicfree/plugins/) ;;
+              *) list+=("$t") ;;
+            esac
+          done
+          node scripts/test-musicfree.mjs "${list[@]}" --keyword "$KEYWORD" --md "$GITHUB_STEP_SUMMARY" --json report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: plugin-report
+          path: report.json

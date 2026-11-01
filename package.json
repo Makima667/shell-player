@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test tests/*.test.js",
+    "check:plugins": "node scripts/test-musicfree.mjs",
     "tauri": "tauri"
   },
   "dependencies": {
