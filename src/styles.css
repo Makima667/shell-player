@@ -166,7 +166,7 @@ body.playing .logo-mark i { animation-play-state: running; }
 
 /* ---------- 歌曲列表 ---------- */
 .tracks { display: flex; flex-direction: column; }
-.trk { display: grid; grid-template-columns: 30px 44px minmax(0, 1.4fr) minmax(0, 1fr) 82px 52px auto; gap: 12px; align-items: center;
+.trk { display: grid; grid-template-columns: 30px 44px minmax(0, 1.4fr) minmax(0, 1fr) 82px 52px var(--act-w, auto); gap: 12px; align-items: center;
   padding: 6px 8px; border-radius: 12px; transition: background .2s, transform .28s var(--ease); animation: rowIn .5s var(--ease) backwards; animation-delay: calc(min(var(--i, 0), 18) * 22ms); }
 .tracks.quiet .trk { animation: none; }
 @keyframes rowIn { from { opacity: 0; transform: translateY(8px); } }
@@ -181,6 +181,11 @@ body.playing .logo-mark i { animation-play-state: running; }
 .t-album { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 13px; }
 .t-dur { color: var(--muted); font-size: 12px; text-align: right; }
 .t-act { display: flex; justify-content: flex-end; opacity: .55; transition: opacity .2s; }
+/* 操作列定宽，表头和每一行的列才能对齐（喜欢 + 更多 = 2 个按钮，播放列表多一个移除和拖动把手） */
+.tracks { --act-w: 64px; }
+.tracks[data-ctx="q"] { --act-w: 96px; }
+body.touch .tracks { --act-w: 80px; }
+body.touch .tracks[data-ctx="q"] { --act-w: 120px; }
 .trk:hover .t-act, .trk:focus-within .t-act, .trk.playing .t-act { opacity: 1; }
 .t-act .icon-btn { width: 32px; height: 32px; }
 .t-act .icon-btn svg { width: 17px; height: 17px; }
@@ -190,6 +195,7 @@ body.playing .logo-mark i { animation-play-state: running; }
 .chip.ok { color: var(--ok); }
 .list-head { color: var(--muted); font-size: 11px; letter-spacing: .08em; padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 4px; border-radius: 0; animation: none; }
 .list-head:hover { background: none; }
+.list-head .t-album, .list-head .t-dur { font-size: inherit; }
 
 /* 正在播放的跳动小柱 */
 .eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; }
@@ -371,7 +377,7 @@ body.playing .tonearm { transform: rotate(0deg); }
 
 /* ---------- 响应式 ---------- */
 @media (max-width: 1000px) {
-  .trk { grid-template-columns: 26px 44px minmax(0, 1fr) 72px 48px auto; }
+  .trk { grid-template-columns: 26px 44px minmax(0, 1fr) 72px 48px var(--act-w, auto); }
   .trk .t-album { display: none; }
 }
 @media (max-width: 860px) {
