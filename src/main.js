@@ -24,6 +24,8 @@ const audio = $('#audio');
 const svg = d => `<svg viewBox="0 0 24 24"><path d="${d}"/></svg>`;
 const IC = {
   play: svg('M8 5.5v13l11-6.5z'),
+  check: svg('M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.6 7.9l-1.4-1.4z'),
+  search: svg('M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'),
   heart: svg('M12 21 10.6 19.7C5.4 15 2 11.9 2 8.1 2 5 4.4 2.6 7.5 2.6c1.7 0 3.4.8 4.5 2.1a6 6 0 0 1 4.5-2.1C19.6 2.6 22 5 22 8.1c0 3.8-3.4 6.9-8.6 11.6z'),
   more: svg('M12 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z'),
   del: svg('M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4z'),
@@ -71,7 +73,7 @@ const S = {
   results: [], kw: '', page: 1, hasMore: false, searching: false, searchSel: '*',
   lyric: [], lyricIdx: -1, playedVia: null, token: 0, failStreak: 0, failed: new Set(),
   plannedNext: -1, prefetch: new Map(), fromCache: false, pendingSeek: null, sleep: null,
-  localList: [], localShown: 300, lyricShift: store.get('lyricShift', {})
+  localList: [], sel: null, lyricShift: store.get('lyricShift', {})
 };
 const keyOf = t => t ? t.sourceId + '::' + t.id : '';
 // 保存时去掉歌词正文和内嵌封面（本地歌曲的封面是现读的 data URL，体积大）
@@ -135,6 +137,7 @@ window.addEventListener('popstate', () => {
   if (!$('#menu').hidden) return closeMenu(true);
   if (!$('#modal').hidden) return closeDialog(true);
   if (!$('#full').hidden) return closeFull(true);
+  if (S.sel) return endSelect(true);
   if (S.view !== 'search') switchView('search', null, true);
 });
 
@@ -187,11 +190,153 @@ function rowHTML(t, i, ctx) {
     <div class="t-album" title="${esc(t.album)}">${esc(t.album)}</div>
     <span class="chip chip-cell${t.sourceId === 'demo' ? ' accent' : ''}" title="${esc(sources.name(t.sourceId))}">${esc(sources.name(t.sourceId))}</span>
     <span class="t-dur mono">${fmt(t.duration)}</span>
-    <div class="t-act"><button class="icon-btn heart${liked ? ' on' : ''}" data-act="like" aria-label="${liked ? '取消喜欢' : '喜欢'}" title="喜欢">${IC.heart}</button>${extra}</div>
+    <div class="t-act"><button class="icon-btn heart${liked ? ' on' : ''}" data-act="like" aria-label="${liked ? '取消喜欢' : '喜欢'}" title="喜欢">${IC.heart}</button>${extra}<span class="sel-box" aria-hidden="true"></span></div>
   </div>`;
 }
 const listHead = `<div class="trk list-head"><span class="idx">#</span><span></span><span>歌曲</span><span class="t-album">专辑</span><span class="chip-cell">音源</span><span class="t-dur">时长</span><span></span></div>`;
-const tracksHTML = (list, ctx, quiet) => `<div class="tracks${quiet ? ' quiet' : ''}" data-ctx="${ctx}">${listHead}${list.map((t, i) => rowHTML(t, i, ctx)).join('')}</div>`;
+// 长列表先画前 200 行，滚到底再接着画；可以在列表里查找；可以多选
+const CHUNK = 200;
+const FILTERABLE = new Set(['q', 'p', 'h', 'd', 'l']);
+const listFilter = {};
+function visibleIdx(list, ctx) {
+  const q = (listFilter[ctx] || '').trim().toLowerCase();
+  const out = [];
+  list.forEach((t, i) => { if (!q || `${t.title} ${t.artist} ${t.album || ''}`.toLowerCase().includes(q)) out.push(i); });
+  return out;
+}
+function rowsHTML(list, ctx, idx, from = 0) {
+  return idx.slice(from, from + CHUNK).map(i => rowHTML(list[i], i, ctx)).join('')
+    + (from + CHUNK < idx.length ? `<div class="rows-more" data-from="${from + CHUNK}"></div>` : '');
+}
+const noneHTML = q => `<p class="muted small list-none">没有包含「${esc(q)}」的歌曲</p>`;
+function tracksHTML(list, ctx, quiet) {
+  const idx = visibleIdx(list, ctx), q = (listFilter[ctx] || '').trim();
+  const tools = FILTERABLE.has(ctx) && (list.length > 12 || q)
+    ? `<div class="list-tools"><label class="list-filter">${IC.search}<input type="search" data-filter="${ctx}" placeholder="在列表中查找" value="${esc(listFilter[ctx] || '')}" aria-label="在列表中查找"></label><button class="btn" data-sel-start>${IC.check}多选</button></div>`
+    : '';
+  const sel = S.sel?.ctx === ctx ? ' selecting' : '';
+  return `${tools}<div class="tracks${quiet ? ' quiet' : ''}${q ? ' filtered' : ''}${sel}" data-ctx="${ctx}">${listHead}<div class="rows">${rowsHTML(list, ctx, idx)}${q && !idx.length ? noneHTML(q) : ''}</div></div>`;
+}
+const rowsIO = typeof IntersectionObserver === 'function' && new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    const el = e.target, box = el.closest('.tracks');
+    rowsIO.unobserve(el);
+    if (!box || !el.isConnected) continue;
+    const list = listFor(box.dataset.ctx);
+    el.outerHTML = rowsHTML(list, box.dataset.ctx, visibleIdx(list, box.dataset.ctx), +el.dataset.from);
+    if (S.sel) renderSel();
+  }
+}, { rootMargin: '600px' });
+if (rowsIO) new MutationObserver(() => $$('.rows-more:not([data-lo])').forEach(el => { el.dataset.lo = '1'; rowsIO.observe(el); })).observe(document.body, { childList: true, subtree: true });
+// 把还没画出来的行一次画完（定位当前歌曲时用）
+function renderAllRows(box) {
+  let el;
+  while ((el = $('.rows-more', box))) { const list = listFor(box.dataset.ctx); el.outerHTML = rowsHTML(list, box.dataset.ctx, visibleIdx(list, box.dataset.ctx), +el.dataset.from); }
+}
+document.addEventListener('input', e => {
+  const inp = e.target.closest('[data-filter]');
+  if (!inp) return;
+  const ctx = inp.dataset.filter, box = inp.closest('.list-tools')?.nextElementSibling;
+  listFilter[ctx] = inp.value;
+  if (!box?.classList.contains('tracks')) return;
+  const q = inp.value.trim(), list = listFor(ctx), idx = visibleIdx(list, ctx);
+  box.classList.toggle('filtered', !!q);
+  box.classList.add('quiet');
+  $('.rows', box).innerHTML = rowsHTML(list, ctx, idx) + (q && !idx.length ? noneHTML(q) : '');
+  if (S.sel) renderSel();
+});
+
+/* ---------- 多选：批量播放、加到歌单、下载、移除 ---------- */
+function startSelect(ctx, i) {
+  if (S.sel) endSelect();
+  S.sel = { ctx, set: new Set(i == null ? [] : [i]), last: i ?? null };
+  Back.push('select');
+  renderSel();
+}
+function endSelect(fromPop) {
+  if (!S.sel) return;
+  S.sel = null;
+  if (fromPop !== true) Back.pop('select');
+  renderSel();
+}
+function selTracks() {
+  if (!S.sel) return [];
+  const list = listFor(S.sel.ctx);
+  return [...S.sel.set].sort((a, b) => a - b).map(i => list[i]).filter(Boolean);
+}
+const REMOVE_LABEL = { q: '从播放列表移除', p: '从歌单移除', h: '从最近播放移除' };
+function renderSel() {
+  $$('.tracks').forEach(box => {
+    const on = S.sel?.ctx === box.dataset.ctx;
+    box.classList.toggle('selecting', on);
+    $$('.trk[data-i]', box).forEach(el => el.classList.toggle('sel', on && S.sel.set.has(+el.dataset.i)));
+  });
+  $$('[data-sel-start]').forEach(b => b.classList.toggle('on', !!S.sel && b.closest('.list-tools')?.nextElementSibling?.dataset.ctx === S.sel.ctx));
+  const bar = $('#selBar');
+  if (!S.sel) {
+    if (!bar.hidden) { bar.classList.add('closing'); setTimeout(() => { if (!S.sel) { bar.hidden = true; bar.classList.remove('closing'); } }, motionOK() ? 200 : 0); }
+    return;
+  }
+  bar.hidden = false; bar.classList.remove('closing');
+  const n = S.sel.set.size, all = visibleIdx(listFor(S.sel.ctx), S.sel.ctx);
+  $('#selCount').textContent = n ? `已选 ${n} 首` : '点歌曲来选择';
+  $('#selAll').textContent = n && all.every(i => S.sel.set.has(i)) ? '全不选' : '全选';
+  $$('#selBar [data-sel]').forEach(b => { if (b.dataset.sel !== 'all' && b.dataset.sel !== 'close') b.disabled = !n; });
+  const rm = $('#selBar [data-sel="remove"]');
+  rm.hidden = !REMOVE_LABEL[S.sel.ctx];
+  rm.title = REMOVE_LABEL[S.sel.ctx] || '';
+  $('#selBar [data-sel="download"]').hidden = !isTauri || S.sel.ctx === 'd' || S.sel.ctx === 'l';
+}
+function toggleSel(i, range) {
+  const s = S.sel.set;
+  if (range && S.sel.last != null) {
+    const vis = visibleIdx(listFor(S.sel.ctx), S.sel.ctx);
+    const a = vis.indexOf(S.sel.last), b = vis.indexOf(i);
+    if (a >= 0 && b >= 0) { for (let k = Math.min(a, b); k <= Math.max(a, b); k++) s.add(vis[k]); S.sel.last = i; return renderSel(); }
+  }
+  s.has(i) ? s.delete(i) : s.add(i);
+  S.sel.last = i;
+  navigator.vibrate?.(6);
+  renderSel();
+}
+$('#selBar').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sel]');
+  if (!b || !S.sel) return;
+  const act = b.dataset.sel, ctx = S.sel.ctx, ts = selTracks();
+  if (act === 'close') return endSelect();
+  if (act === 'all') {
+    const all = visibleIdx(listFor(ctx), ctx);
+    if (all.length && all.every(i => S.sel.set.has(i))) S.sel.set.clear(); else all.forEach(i => S.sel.set.add(i));
+    return renderSel();
+  }
+  if (!ts.length) return;
+  if (act === 'play') { endSelect(); playAll(ts); }
+  else if (act === 'next') {
+    const cur = curTrack(), keys = new Set(ts.map(keyOf));
+    const add = ts.filter(t => !cur || keyOf(t) !== keyOf(cur));
+    S.queue = S.queue.filter(q => !keys.has(keyOf(q)) || (cur && keyOf(q) === keyOf(cur)));
+    S.cur = cur ? S.queue.findIndex(q => keyOf(q) === keyOf(cur)) : -1;
+    S.queue.splice(S.cur + 1, 0, ...add);
+    saveQueue(); renderQueue(); endSelect(); toast(`${add.length} 首会接着当前这首播放`);
+  }
+  else if (act === 'pl') openMenu(b, playlistItems(ts).map(it => typeof it === 'string' || !it.action ? it : { ...it, action: async () => { await it.action(); endSelect(); } }));
+  else if (act === 'download') { endSelect(); toast(`开始下载 ${ts.length} 首`); for (const t of ts) await download(t); }
+  else if (act === 'remove') {
+    const idx = [...S.sel.set].sort((a, b) => b - a);
+    endSelect();
+    if (ctx === 'q') idx.forEach(i => removeFromQueue(i));
+    else if (ctx === 'p') { const pl = playlist(S.plId); idx.forEach(i => pl.tracks.splice(i, 1)); savePlaylists(); renderPlaylist(); renderPlNav(); refreshHearts(); }
+    else if (ctx === 'h') { idx.forEach(i => S.history.splice(i, 1)); store.set('history', S.history); renderHistory(true); }
+    toast(`已移除 ${idx.length} 首`);
+  }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-sel-start]');
+  if (!b) return;
+  const ctx = b.closest('.list-tools')?.nextElementSibling?.dataset.ctx;
+  if (ctx) S.sel?.ctx === ctx ? endSelect() : startSelect(ctx);
+});
 
 function listFor(ctx) {
   if (ctx === 'r') return S.results;
@@ -256,6 +401,9 @@ document.addEventListener('click', e => {
   if (!row || !box) return;
   const ctx = box.dataset.ctx, list = listFor(ctx), i = +row.dataset.i, t = list[i];
   if (!t) return;
+  if (S.sel?.ctx === ctx) { if (!e.target.closest('.drag')) toggleSel(i, e.shiftKey); return; }
+  // 电脑上按住 Ctrl / Shift 点歌曲直接进入多选
+  if (!btn && (e.ctrlKey || e.metaKey || e.shiftKey) && !coarse()) { startSelect(ctx, i); return; }
   const act = btn?.dataset.act;
   if (act === 'like') { toggleLike(t, btn); }
   else if (act === 'more') { trackMenu(t, btn, ctx, i); }
@@ -269,6 +417,7 @@ document.addEventListener('contextmenu', e => {
   const ctx = box.dataset.ctx, i = +row.dataset.i, t = listFor(ctx)[i];
   if (!t) return;
   e.preventDefault();
+  if (S.sel?.ctx === ctx) return toggleSel(i);
   navigator.vibrate?.(8);
   trackMenu(t, { x: e.clientX, y: e.clientY }, ctx, i);
 });
@@ -287,6 +436,7 @@ document.addEventListener('dblclick', e => {
   const row = e.target.closest('.trk[data-i]'), box = e.target.closest('.tracks');
   if (!row || !box || e.target.closest('button')) return;
   const ctx = box.dataset.ctx;
+  if (S.sel?.ctx === ctx) return;
   ctx === 'q' ? playIndex(+row.dataset.i) : playFromList(listFor(ctx), +row.dataset.i);
 });
 
@@ -364,7 +514,8 @@ function trackMenu(t, anchor, ctx, i) {
     { label: '下一首播放', icon: IC.next, action: () => { const qi = S.queue.findIndex(q => keyOf(q) === keyOf(t)); if (qi >= 0) { S.queue.splice(qi, 1); if (qi < S.cur) S.cur--; } S.queue.splice(S.cur + 1, 0, t); saveQueue(); renderQueue(); toast('下一首播放：' + t.title); } },
     { label: '加入播放列表', icon: IC.queue, action: () => { if (S.queue.some(q => keyOf(q) === keyOf(t))) return toast('已经在播放列表里了'); S.queue.push(t); saveQueue(); renderQueue(); toast('已加入播放列表'); } },
     { label: '下载', icon: IC.dl, action: () => download(t) },
-    '-', ...playlistItems([t])
+    '-', ...playlistItems([t]),
+    '-', { label: '多选', icon: IC.check, action: () => startSelect(ctx, i) }
   ];
   if (ctx === 'p') items.push('-', { label: '从歌单移除', icon: IC.trash, action: () => { const pl = playlist(S.plId); pl.tracks.splice(i, 1); savePlaylists(); renderPlaylist(); renderPlNav(); refreshHearts(); } });
   if (ctx === 'q') items.splice(1, 2, { label: '从播放列表移除', icon: IC.trash, action: () => removeFromQueue(i) });
@@ -515,7 +666,7 @@ async function renderLocal() {
   }
   const scanned = store.get('localScannedAt', 0);
   const folders = localMusic.usesFolders() ? await localMusic.folders().catch(() => []) : [];
-  const list = S.localList, shown = list.slice(0, S.localShown);
+  const list = S.localList;
   box.innerHTML = `<div class="row local-acts">
       <button class="btn primary" data-lm="scan" id="lmScan">${IC.loop}${scanned ? '重新扫描' : '开始扫描'}</button>
       ${localMusic.usesFolders() ? `<button class="btn" data-lm="add">${IC.folder}添加文件夹</button>` : ''}
@@ -523,7 +674,7 @@ async function renderLocal() {
     </div>
     ${localMusic.usesFolders() ? `<div class="folder-list">${folders.map((f, i) => `<span class="folder-chip" style="--i:${i}" title="${esc(f)}">${IC.folder}<span>${esc(f)}</span><button class="mini-btn" data-lm="rm" data-path="${esc(f)}" aria-label="移除文件夹" title="不再扫描这个文件夹">${IC.del}</button></span>`).join('') || '<span class="small muted">还没有音乐文件夹，点「添加文件夹」选一个</span>'}</div>` : ''}
     <p class="small muted">${list.length ? `${list.length} 首` : '还没有扫描到歌曲'}${scanned ? ` · 上次扫描 ${ago(scanned)}` : ''} · 短于 ${S.settings.localMinDur} 秒的文件会被跳过（可在设置里改）</p>
-    ${list.length ? tracksHTML(shown, 'l') + (list.length > shown.length ? `<div class="row" style="justify-content:center;margin-top:12px"><button class="btn" data-lm="more">再显示 ${Math.min(500, list.length - shown.length)} 首（共 ${list.length} 首）</button></div>` : '')
+    ${list.length ? tracksHTML(list, 'l')
       : emptyHTML('♫', isMobile() ? '点「开始扫描」读取手机里的音乐，第一次会请求读取音乐的权限。' : '点「开始扫描」查找音乐文件夹里的歌曲，支持 mp3、flac、m4a、ogg、wav 等格式。')}`;
 }
 async function scanLocal() {
@@ -533,7 +684,6 @@ async function scanLocal() {
     const list = await localMusic.scan(S.settings.localMinDur);
     store.set('localLib', list); store.set('localScannedAt', Date.now());
     setLocalLibrary(list);
-    S.localShown = 300;
     sources.setEnabled('local', true);
     toast(list.length ? `找到 ${list.length} 首歌` : '没有找到音乐文件', 3000);
   } catch (e) { toast('扫描失败：' + (e?.message || e), 5000); }
@@ -548,7 +698,6 @@ $('#localBody').addEventListener('click', async e => {
   else if (a === 'dir') $('#localDir').click();
   else if (a === 'play') playAll(S.localList);
   else if (a === 'shuffle') playShuffled(S.localList);
-  else if (a === 'more') { S.localShown += 500; renderLocal(); }
   else if (a === 'add') {
     try { const dir = await localMusic.addFolder(); if (dir) { toast('已添加，开始扫描'); await renderLocal(); scanLocal(); } }
     catch (err) { toast('添加失败：' + (err?.message || err)); }
@@ -637,7 +786,7 @@ async function doSearch(more = false) {
       const start = S.results.length;
       S.results = S.results.concat(add);
       if (!$('#results .tracks')) renderResults({ errors, pending });
-      else { $('#results .tracks').insertAdjacentHTML('beforeend', add.map((t, k) => rowHTML(t, start + k, 'r').replace(/style="--i:\d+"/, `style="--i:${k}"`)).join('')); renderResultsMeta(errors, pending); }
+      else { $('#results .tracks .rows').insertAdjacentHTML('beforeend', add.map((t, k) => rowHTML(t, start + k, 'r').replace(/style="--i:\d+"/, `style="--i:${k}"`)).join('')); renderResultsMeta(errors, pending); }
     }
   });
   if (my !== searchToken) return;
@@ -709,6 +858,8 @@ function renderQueue(quiet) {
 enableReorder($('#queueList'), { handle: '.drag', row: '.trk[data-i]', onDrop: moveInQueue });
 // 打开播放列表时滚到正在播放的那首
 function revealPlaying() {
+  const box = $('#queueList .tracks');
+  if (box && S.cur >= CHUNK && !$('.trk.playing', box)) renderAllRows(box);
   const el = $('#queueList .trk.playing');
   if (el) el.scrollIntoView({ block: 'center', behavior: motionOK() ? 'smooth' : 'auto' });
 }
@@ -1114,6 +1265,7 @@ async function importBackup(e) {
 /* ================= 导航 ================= */
 const VIEW_ORDER = ['search', 'queue', 'lib', 'pl', 'history', 'downloads', 'local', 'sources', 'settings', 'docs'];
 function switchView(view, plId, fromPop) {
+  if (S.sel) endSelect();
   const prev = S.view, prevPl = S.plId;
   if (plId) S.plId = plId;
   const same = prev === view && (view !== 'pl' || prevPl === S.plId);
@@ -1656,7 +1808,8 @@ function showKeys() {
   openDialog({ title: '快捷键', narrow: true, body: `<div class="keys">${keys.map(([k, d]) => `<div><span>${k.split(' ').map(x => /^[/+]$|^或$/.test(x) ? `<i>${x}</i>` : `<kbd>${esc(x)}</kbd>`).join(' ')}</span><span class="muted">${d}</span></div>`).join('')}</div>` });
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { if (menuOpen) return closeMenu(); if (!$('#modal').hidden) return closeDialog(); if (!$('#full').hidden) return closeFull(); }
+  if (e.key === 'Escape') { if (menuOpen) return closeMenu(); if (!$('#modal').hidden) return closeDialog(); if (!$('#full').hidden) return closeFull(); if (S.sel) return endSelect(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a' && S.sel && !e.target.closest('input, textarea')) { e.preventDefault(); $('#selAll').click(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); closeFull(); switchView('search'); $('#kw').focus(); $('#kw').select(); return; }
   if (e.target.closest('input, textarea, select, [contenteditable]') || !$('#modal').hidden) return;
   const k = e.key.toLowerCase();

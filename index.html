@@ -183,6 +183,17 @@
 </div>
 
 <div class="menu" id="menu" role="menu" hidden></div>
+<div class="sel-bar" id="selBar" role="toolbar" aria-label="多选操作" hidden>
+  <button class="icon-btn" data-sel="close" aria-label="退出多选" title="退出多选（Esc）"><svg viewBox="0 0 24 24"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+  <span class="sel-count" id="selCount"></span>
+  <button class="sel-link" data-sel="all" id="selAll">全选</button>
+  <span class="grow"></span>
+  <button class="sel-act" data-sel="play" title="播放选中的歌"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg><span>播放</span></button>
+  <button class="sel-act" data-sel="next" title="接在当前这首后面播放"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM5 5l9.5 7L5 19z"/></svg><span>下一首</span></button>
+  <button class="sel-act" data-sel="pl" title="添加到歌单" data-menu-anchor><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm13 0v-3h2v3h3v2h-3v3h-2v-3h-3v-2z"/></svg><span>加到歌单</span></button>
+  <button class="sel-act" data-sel="download" title="下载"><svg viewBox="0 0 24 24"><path d="M11 3h2v9.2l3.6-3.6L18 10l-6 6-6-6 1.4-1.4 3.6 3.6zM4 18h16v2H4z"/></svg><span>下载</span></button>
+  <button class="sel-act danger" data-sel="remove"><svg viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4zm-3 6h12l-1 12H7z"/></svg><span>移除</span></button>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <audio id="audio" preload="auto"></audio>
 <script type="module" src="/src/main.js"></script>
