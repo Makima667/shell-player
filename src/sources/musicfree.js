@@ -6,6 +6,8 @@ import { parseDur } from '../core/util.js';
 
 const QUALITY = { '128k': 'standard', '320k': 'high', flac: 'super', hires: 'super' };
 const FALLBACK = ['super', 'high', 'standard', 'low'];
+// 显示给用户的音质名，和洛雪源保持一致
+const LABEL = { super: 'flac', high: '320k', standard: '128k', low: '低音质' };
 
 export function looksLikeMusicFree(code) {
   return /module\.exports|exports\.\w+\s*=/.test(code) && /getMediaSource|platform\s*:/.test(code);
@@ -82,7 +84,7 @@ export function adaptMusicFree(plugin, { userVars } = {}) {
           if (r && r.url) {
             const headers = { ...(r.headers || {}) };
             if (r.userAgent) headers['User-Agent'] = r.userAgent;
-            return { url: r.url, headers, quality: q };
+            return { url: r.url, headers, quality: LABEL[q] || q };
           }
         } catch (e) { lastErr = e; }
       }

@@ -83,7 +83,7 @@
     </section>
 
     <section class="view" data-view="sources" hidden>
-      <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn" id="updateAll" title="重新下载按网址或订阅导入的音源，有新版本就替换">检查更新</button><button class="btn primary" id="addSrc">添加音源</button></header>
+      <header class="view-head row"><div class="grow"><h2>音源</h2><p class="muted small">播放器本身没有曲库。每个音源负责搜索、给出播放地址和歌词。支持 MusicFree 插件、洛雪自定义源、JSON 配置和脚本。</p></div><button class="btn" id="checkAll" title="用「晴天」把每个音源实际搜一遍、取一次地址、试着加载音频，看哪些能用">一键体检</button><button class="btn" id="updateAll" title="重新下载按网址或订阅导入的音源，有新版本就替换">检查更新</button><button class="btn primary" id="addSrc">添加音源</button></header>
       <div class="sources" id="sourceList"></div>
       <div class="row" style="margin-top:14px">
         <button class="btn" id="bundledRestore" title="把随包内置的音源重新加回来，删掉的也会恢复">恢复内置音源</button>

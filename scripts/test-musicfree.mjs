@@ -5,7 +5,7 @@
 // 用法：
 //   node scripts/test-musicfree.mjs                         # 测内置的 MusicFree 插件
 //   node scripts/test-musicfree.mjs 目录/ 文件.js 订阅URL     # 测指定的插件（可混用）
-//   选项：--keyword 晴天  --quality 320k  --tracks 3  --md 报告.md  --json 报告.json
+//   选项：--keyword 晴天  --quality 320k  --tracks 2  --parallel 6  --md 报告.md  --json 报告.json
 //
 // 注意：网络环境会影响结果。海外机器（例如 GitHub Actions）上，很多国内平台会拒绝给播放地址，
 // 这类失败不代表插件在国内用不了。
@@ -15,14 +15,14 @@ import { fileURLToPath } from 'node:url';
 import { runCommonJs, adaptMusicFree, isMusicFreePlugin, isSubscription } from '../src/sources/musicfree.js';
 
 const args = process.argv.slice(2);
-const opt = { keyword: '晴天', quality: '320k', tracks: 3, md: '', json: '', timeout: 20000 };
+const opt = { keyword: '晴天', quality: '320k', tracks: 2, md: '', json: '', timeout: 20000, parallel: 6 };
 const targets = [];
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a.startsWith('--')) opt[a.slice(2)] = args[++i];
   else targets.push(a);
 }
-opt.tracks = Number(opt.tracks) || 3;
+opt.tracks = Number(opt.tracks) || 2;
 if (!targets.length) targets.push(fileURLToPath(new URL('../src/sources/bundled/musicfree/', import.meta.url)));
 
 const withTimeout = (p, ms, what) => Promise.race([
@@ -152,12 +152,16 @@ for (const t of targets) {
   catch (e) { plugins.push({ name: t, error: '读取失败：' + errText(e) }); }
 }
 
-const rows = [];
-for (const p of plugins) {
-  const row = await check(p);
-  rows.push(row);
-  console.error(`${row.play.startsWith('✓') ? '✓' : row.load.startsWith('✓') ? '·' : '✗'} ${row.name}`);
-}
+// 插件之间互不影响，并发跑，结果按原顺序输出
+const rows = new Array(plugins.length);
+let next = 0;
+await Promise.all(Array.from({ length: Math.max(1, Number(opt.parallel) || 6) }, async () => {
+  while (next < plugins.length) {
+    const i = next++;
+    const row = rows[i] = await check(plugins[i]);
+    console.error(`${row.play.startsWith('✓') ? '✓' : row.load.startsWith('✓') ? '·' : '✗'} ${row.name}`);
+  }
+}));
 
 const cell = s => String(s || '').replace(/\|/g, '\\|');
 const usable = rows.filter(r => r.play.startsWith('✓')).length;

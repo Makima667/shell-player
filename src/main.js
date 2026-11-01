@@ -1,5 +1,5 @@
 import './styles.css';
-import { esc, fmt, hue, uid } from './core/util.js';
+import { esc, fmt, hue, uid, withTimeout } from './core/util.js';
 import { parseLrc, mergeTranslation, lineAt } from './core/lrc.js';
 import { http } from './core/http.js';
 import { store } from './core/store.js';
@@ -919,6 +919,7 @@ function renderSources() {
         <div class="row small" style="margin-top:6px"><span class="chip${r.kind === 'builtin' ? ' accent' : ''}">${KIND[r.kind] || r.kind}</span>${r.version ? `<span class="chip mono">v${esc(r.version)}</span>` : ''}${r.error ? '<span class="chip err">加载失败</span>' : caps ? `<span class="chip">${caps}</span>` : ''}${healthChip}</div></div>
         <label class="switch" title="${on ? '停用' : '启用'}"><input type="checkbox" data-sa="toggle" ${on ? 'checked' : ''} ${r.error ? 'disabled' : ''} aria-label="启用 ${esc(r.name)}"><span></span></label></div>
       <div class="src-desc">${r.error ? `<span style="color:var(--danger)">${esc(r.error)}</span>` : esc(r.description || '没有描述')}${r.author ? `<br>作者：${esc(r.author)}` : ''}</div>
+      ${checkHTML(id)}
       ${extra ? `<div class="row">${extra}</div>` : ''}</div>`;
   });
   $('#sourceList').innerHTML = cards.join('');
@@ -926,6 +927,113 @@ function renderSources() {
   renderSrcSelect();
   renderStarter();
 }
+/* 一键体检：在用户自己的网络里，把每个音源实际搜一遍、取一次地址、让音频元素试着加载，结果显示在卡片上 */
+const srcCheck = new Map();
+const CHECK_SKIP = new Set(['local', 'downloaded', 'demo']);
+function checkHTML(id) {
+  const c = srcCheck.get(id);
+  if (!c) return '';
+  const cls = c.state === 'run' ? '' : c.ok ? ' ok' : c.ok === false ? ' err' : '';
+  return `<div class="src-check${cls}">${c.state === 'run' ? '<span class="spin"></span>' : c.ok ? IC.check : ''}<span>${esc(c.text)}</span></div>`;
+}
+function setCheck(id, v) {
+  srcCheck.set(id, v);
+  const card = $(`#sourceList .src[data-id="${CSS.escape(id)}"]`);
+  if (!card) return;
+  card.querySelector('.src-check')?.remove();
+  card.querySelector('.src-desc')?.insertAdjacentHTML('afterend', checkHTML(id));
+}
+// 让一个临时的 audio 元素加载地址：读到时长就算能播，和真正播放走的是同一条路
+function probeAudio(url, ms = 12000) {
+  return new Promise(resolve => {
+    const a = new Audio();
+    let done = false;
+    const end = (ok, why) => {
+      if (done) return; done = true;
+      clearTimeout(timer);
+      a.removeAttribute('src'); a.load();
+      resolve({ ok, why, duration: a.duration });
+    };
+    const timer = setTimeout(() => end(false, '加载音频超时'), ms);
+    a.preload = 'metadata';
+    a.muted = true;
+    a.addEventListener('loadedmetadata', () => end(true));
+    a.addEventListener('error', () => end(false, ['', '加载被中断', '网络错误', '音频解码失败', '地址无效或格式不支持'][a.error?.code || 0] || '无法加载音频'));
+    a.src = url;
+  });
+}
+const shortErr = e => String(e?.message || e).replace(/\s+/g, ' ').slice(0, 60);
+async function tryUrl(id, track) {
+  const src = sources.get(id);
+  const r = await withTimeout(Promise.resolve().then(() => src.getUrl(track, S.settings.quality)), 20000, '取地址超时');
+  if (!r?.url) throw new Error('没有返回播放地址');
+  const p = await probeAudio(r.url);
+  if (!p.ok) throw new Error(`拿到了地址，但${p.why}`);
+  return r;
+}
+async function checkSources(btn) {
+  const KW = '晴天';
+  const ids = [...sources.runtime.keys()].filter(id => !CHECK_SKIP.has(id) && !sources.get(id).error && !sources.get(id).builtin);
+  if (!ids.length) return toast('还没有可以体检的音源');
+  btn.disabled = true;
+  srcCheck.clear();
+  ids.forEach(id => setCheck(id, { state: 'run', text: '等待中…' }));
+  const samples = []; // 搜索得到的歌，留给只取地址的洛雪源用
+  let done = 0, good = 0;
+  const step = () => { btn.textContent = `体检中 ${++done}/${ids.length}`; };
+  const pool = async (list, fn, n = 3) => {
+    const q = [...list];
+    await Promise.all(Array.from({ length: Math.min(n, q.length) }, async () => { while (q.length) await fn(q.shift()); }));
+  };
+  const finish = (id, ok, text) => { if (ok) good++; setCheck(id, { state: 'done', ok, text }); step(); };
+  btn.textContent = `体检中 0/${ids.length}`;
+  const searchable = ids.filter(id => sources.get(id).canSearch);
+  const urlOnly = ids.filter(id => !sources.get(id).canSearch);
+  await pool(searchable, async id => {
+    const src = sources.get(id);
+    setCheck(id, { state: 'run', text: `正在搜索「${KW}」…` });
+    let list;
+    try {
+      const r = await withTimeout(Promise.resolve().then(() => src.search(KW, 1)), 15000, '搜索超时');
+      list = (r?.list || []).map(x => sources.normTrack(x, id));
+    } catch (e) { return finish(id, false, '搜索失败：' + shortErr(e)); }
+    if (!list.length) return finish(id, false, `搜「${KW}」没有结果`);
+    samples.push(...list.slice(0, 3));
+    if (!src.canUrl) return finish(id, true, `能搜索（${list.length} 首），播放地址要靠洛雪源或其他音源`);
+    setCheck(id, { state: 'run', text: `搜到 ${list.length} 首，正在试播…` });
+    let lastErr;
+    for (const t of list.slice(0, 2)) {
+      try {
+        const r = await tryUrl(id, t);
+        return finish(id, true, `能搜能播：搜到 ${list.length} 首，《${t.title}》${r.quality ? ' · ' + r.quality : ''}`);
+      } catch (e) { lastErr = e; }
+    }
+    finish(id, false, `能搜索（${list.length} 首），但播不了：${shortErr(lastErr)}`);
+  });
+  await pool(urlOnly, async id => {
+    const src = sources.get(id);
+    const keys = src.lxKeys || [];
+    const pick = samples.filter(t => keys.includes(t.lxKey));
+    if (!src.canUrl) return finish(id, null, '这个音源既不能搜索也不提供播放地址');
+    if (!pick.length) return finish(id, null, `没有能搜索${keys.map(k => LX_NAMES[k] || k).join('/') || '对应平台'}的音源，没法单独测`);
+    setCheck(id, { state: 'run', text: '正在试播…' });
+    const tried = new Set();
+    let lastErr;
+    for (const t of pick) {
+      if (tried.has(t.lxKey) || tried.size >= 3) continue;
+      tried.add(t.lxKey);
+      try {
+        const r = await tryUrl(id, t);
+        return finish(id, true, `能播：${LX_NAMES[t.lxKey] || t.lxKey}《${t.title}》${r.quality ? ' · ' + r.quality : ''}`);
+      } catch (e) { lastErr = e; }
+    }
+    finish(id, false, `播不了：${shortErr(lastErr)}`);
+  });
+  btn.disabled = false;
+  btn.textContent = '一键体检';
+  toast(`体检完成：${good} 个能用，${ids.length - good} 个有问题或没法单独测`, 5000);
+}
+$('#checkAll').addEventListener('click', e => checkSources(e.currentTarget));
 $('#sourceList').addEventListener('click', e => {
   const b = e.target.closest('[data-sa]'), card = e.target.closest('.src[data-id]');
   if (!b || !card || b.dataset.sa === 'toggle') return;

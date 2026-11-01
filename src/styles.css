@@ -228,6 +228,13 @@ body:not(.playing) .eq i { animation-play-state: paused; }
 .src-head { display: flex; gap: 10px; align-items: flex-start; }
 .src-name { font-weight: 700; font-size: 15px; }
 .src-desc { font-size: 12px; color: var(--muted); line-height: 1.65; word-break: break-word; }
+/* 一键体检结果 */
+.src-check { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.55; padding: 8px 10px; border-radius: 10px; background: var(--hover); color: var(--muted); animation: fadeIn .25s; word-break: break-word; }
+.src-check svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+.src-check.ok { color: var(--fg); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.src-check.ok svg { color: var(--ok); }
+.src-check.err { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, transparent); }
+.src-check .spin { width: 12px; height: 12px; flex: none; margin-top: 3px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
 .src .row:last-child { margin-top: auto; }
 .switch { position: relative; width: 40px; height: 22px; flex: none; margin-left: auto; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }

@@ -99,7 +99,7 @@ test('MusicFree 插件：require、axios、音质回退、用户变量', async (
   assert.match(calls.at(-1).url, /sign=/);
   const u = await s.getUrl(r.list[0], '320k');
   assert.equal(u.url, 'https://mf-cdn.test/002abc?t=T1');
-  assert.equal(u.quality, 'standard');
+  assert.equal(u.quality, '128k');
   assert.equal(u.headers.Referer, 'https://y.qq.com');
 });
 
