@@ -225,3 +225,19 @@ test('专用线路列表给出明确提示', async () => {
     await assert.rejects(compileSource(code), /线路列表/);
   }
 });
+
+test('插件请求默认带浏览器 UA、去掉 Origin，插件自己写的请求头不覆盖', async () => {
+  const { nativeLikeFetch, PLUGIN_UA } = await import('../src/core/http.js');
+  const seen = [];
+  const f = nativeLikeFetch(async (url, init) => { seen.push(init.headers); return new Response('{}'); });
+  await f('https://a.test/', { headers: { Referer: 'https://y.qq.com' } });
+  await f('https://a.test/', { headers: { 'user-agent': 'okhttp/4.9', Origin: 'https://y.qq.com' } });
+  assert.equal(seen[0].get('user-agent'), PLUGIN_UA);
+  assert.equal(seen[0].get('origin'), '');
+  assert.equal(seen[0].get('referer'), 'https://y.qq.com');
+  assert.equal(seen[1].get('user-agent'), 'okhttp/4.9');
+  assert.equal(seen[1].get('origin'), 'https://y.qq.com');
+  const g = nativeLikeFetch(async (url, init) => { seen.push(init.headers); return new Response('{}'); }, { dropOrigin: false });
+  await g('https://a.test/');
+  assert.equal(seen[2].has('origin'), false);
+});

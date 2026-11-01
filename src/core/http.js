@@ -3,6 +3,20 @@
 let fetchImpl = (...a) => globalThis.fetch(...a);
 export function setFetch(f) { fetchImpl = f; }
 
+// 让音源插件的请求尽量像在原生 App 里发出：
+// - 插件没指定 User-Agent 时用常见浏览器的，而不是 Tauri HTTP 插件默认的 tauri-plugin-http/x.y.z（B 站等会直接拒绝）
+// - dropOrigin：Tauri 会自动带上 Origin: tauri://localhost 一类的来源，部分接口因此报错；
+//   传空字符串时它会把 Origin 去掉（需要 unsafe-headers 特性，Cargo.toml 已开启）
+export const PLUGIN_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
+export function nativeLikeFetch(f, { dropOrigin = true } = {}) {
+  return (input, init = {}) => {
+    const headers = new Headers(init.headers || {});
+    if (!headers.has('user-agent')) headers.set('User-Agent', PLUGIN_UA);
+    if (dropOrigin && !headers.has('origin')) headers.set('Origin', '');
+    return f(input, { ...init, headers });
+  };
+}
+
 const hasHeader = (h, name) => Object.keys(h).some(k => k.toLowerCase() === name);
 const isPlainBody = b => b != null && typeof b === 'object'
   && !(b instanceof ArrayBuffer) && !ArrayBuffer.isView(b)

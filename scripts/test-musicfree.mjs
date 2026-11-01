@@ -5,7 +5,7 @@
 // 用法：
 //   node scripts/test-musicfree.mjs                         # 测内置的 MusicFree 插件
 //   node scripts/test-musicfree.mjs 目录/ 文件.js 订阅URL     # 测指定的插件（可混用）
-//   选项：--keyword 晴天  --quality 320k  --tracks 2  --parallel 6  --md 报告.md  --json 报告.json
+//   选项：--keyword 晴天  --quality 320k  --tracks 2  --parallel 3  --md 报告.md  --json 报告.json
 //
 // 注意：网络环境会影响结果。海外机器（例如 GitHub Actions）上，很多国内平台会拒绝给播放地址，
 // 这类失败不代表插件在国内用不了。
@@ -13,9 +13,13 @@ import { readFile, readdir, stat, writeFile, appendFile } from 'node:fs/promises
 import { join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runCommonJs, adaptMusicFree, isMusicFreePlugin, isSubscription } from '../src/sources/musicfree.js';
+import { setFetch, nativeLikeFetch, PLUGIN_UA } from '../src/core/http.js';
+
+// 和 App 里一样的默认请求头（Node 本来就不带 Origin）
+setFetch(nativeLikeFetch(globalThis.fetch, { dropOrigin: false }));
 
 const args = process.argv.slice(2);
-const opt = { keyword: '晴天', quality: '320k', tracks: 2, md: '', json: '', timeout: 20000, parallel: 6 };
+const opt = { keyword: '晴天', quality: '320k', tracks: 2, md: '', json: '', timeout: 20000, parallel: 3 };
 const targets = [];
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
@@ -75,7 +79,8 @@ async function probe(url, headers = {}) {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), opt.timeout);
   try {
-    const r = await fetch(url, { headers: { ...headers, Range: 'bytes=0-4095' }, signal: ctl.signal, redirect: 'follow' });
+    // 真正播放时是 audio 元素去拉，带的是浏览器 UA
+    const r = await fetch(url, { headers: { 'User-Agent': PLUGIN_UA, ...headers, Range: 'bytes=0-4095' }, signal: ctl.signal, redirect: 'follow' });
     const type = r.headers.get('content-type') || '';
     const reader = r.body?.getReader();
     let buf = new Uint8Array(0);
@@ -155,7 +160,7 @@ for (const t of targets) {
 // 插件之间互不影响，并发跑，结果按原顺序输出
 const rows = new Array(plugins.length);
 let next = 0;
-await Promise.all(Array.from({ length: Math.max(1, Number(opt.parallel) || 6) }, async () => {
+await Promise.all(Array.from({ length: Math.max(1, Number(opt.parallel) || 3) }, async () => {
   while (next < plugins.length) {
     const i = next++;
     const row = rows[i] = await check(plugins[i]);

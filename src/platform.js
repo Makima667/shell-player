@@ -1,5 +1,5 @@
 // 平台差异集中在这里：网页 / 桌面（Tauri）/ 安卓（Tauri）
-import { setFetch, http } from './core/http.js';
+import { setFetch, http, nativeLikeFetch } from './core/http.js';
 import { safeFileName } from './core/util.js';
 
 export const isTauri = typeof window !== 'undefined' && !!window.__TAURI_INTERNALS__;
@@ -9,7 +9,7 @@ export async function initPlatform() {
   if (!isTauri) return;
   try { os = (await import('@tauri-apps/plugin-os')).platform(); } catch { os = 'desktop'; }
   const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
-  setFetch(tauriFetch);
+  setFetch(nativeLikeFetch(tauriFetch));
 }
 
 export const platformName = () => os;
