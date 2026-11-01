@@ -94,7 +94,10 @@ jobs:
       - name: 生成自动更新包
         if: env.TAURI_SIGNING_PRIVATE_KEY != ''
         shell: bash
-        run: node -e "const f='src-tauri/tauri.conf.json',fs=require('fs'),c=JSON.parse(fs.readFileSync(f));c.bundle.createUpdaterArtifacts=true;fs.writeFileSync(f,JSON.stringify(c,null,2))"
+        env:
+          # 公钥和私钥一起放在 Secrets 里，换密钥时不用再改代码
+          UPDATER_PUBKEY: ${{ secrets.TAURI_SIGNING_PUBLIC_KEY }}
+        run: node -e "const f='src-tauri/tauri.conf.json',fs=require('fs'),c=JSON.parse(fs.readFileSync(f));c.bundle.createUpdaterArtifacts=true;const k=(process.env.UPDATER_PUBKEY||'').trim();if(k)c.plugins.updater.pubkey=k;fs.writeFileSync(f,JSON.stringify(c,null,2))"
       # 不发版时只打包验证，不碰 Release
       - name: 打包（验证）
         if: needs.prepare.outputs.release_id == ''
@@ -174,8 +177,9 @@ jobs:
           APK=$(find src-tauri/gen/android/app/build/outputs/apk -name '*-unsigned.apk' | head -1)
           echo "未签名 APK：$APK"
           if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > release.jks
-            ALIAS="$KEY_ALIAS"; PASS="$KEYSTORE_PASSWORD"
+            # 去掉粘贴时可能带上的换行和空格
+            printf '%s' "$KEYSTORE_B64" | tr -d ' \r\n' | base64 -d > release.jks
+            ALIAS="${KEY_ALIAS:-shellplayer}"; PASS="$KEYSTORE_PASSWORD"
           else
             echo "::warning::没有配置签名密钥，使用临时密钥签名（可以安装测试，但以后无法覆盖升级）"
             keytool -genkeypair -v -keystore release.jks -alias shellplayer -keyalg RSA -keysize 2048 -validity 10000 -storepass shellplayer -keypass shellplayer -dname "CN=ShellPlayer"
