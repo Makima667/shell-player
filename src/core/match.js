@@ -33,3 +33,42 @@ export function pickMatches(want, list, min = 4) {
     .sort((x, y) => y.s - x.s)
     .map(x => x.t);
 }
+
+// ---- 搜索结果合并：不同音源搜到的同一首歌只显示一行 ----
+// 比 norm 更严格：括号里的 Live / 伴奏 / DJ 版等信息要保留，不能把现场版并进原版
+const normStrict = s => String(s || '').toLowerCase().replace(/[（【[]/g, '(').replace(/[）】\]]/g, ')').replace(PUNCT, '');
+export const songKey = t => normStrict(t.title) + '|' + (artists(t.artist)[0] || '');
+export function sameSong(a, b) {
+  if (songKey(a) !== songKey(b)) return false;
+  // 时长都知道且差很多，多半是不同版本
+  return !(a.duration > 0 && b.duration > 0 && Math.abs(a.duration - b.duration) > 5);
+}
+
+/**
+ * 把一批新结果并进 results（原地修改）。同一首歌第一次出现的那条留在列表里，
+ * 其他音源的同一首挂在它的 alts 上，播放失败时先换这些来源。
+ * 同一个音源自己的多条结果不合并（可能是不同专辑、不同版本）。
+ * @param {Map<string, number[]>} index 跨批次复用，记录 songKey → 行号
+ * @returns {{ added: object[], touched: number[] }} 新增的行，以及多了来源的行号
+ */
+export function mergeInto(results, incoming, index, maxAlts = 5) {
+  const added = [], touched = new Set();
+  for (const t of incoming) {
+    const k = songKey(t);
+    const rows = index.get(k) || [];
+    const i = rows.find(i => {
+      const h = results[i];
+      return h.sourceId !== t.sourceId && !(h.alts || []).some(a => a.sourceId === t.sourceId) && sameSong(h, t);
+    });
+    if (i !== undefined) {
+      const h = results[i];
+      h.alts = h.alts || [];
+      if (h.alts.length < maxAlts) { h.alts.push(t); touched.add(i); }
+      continue;
+    }
+    index.set(k, [...rows, results.length]);
+    results.push(t);
+    added.push(t);
+  }
+  return { added, touched: [...touched] };
+}

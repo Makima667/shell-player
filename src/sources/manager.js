@@ -77,7 +77,7 @@ export class SourceManager {
     // 同一个音源（相同 id / 同名 MusicFree 插件）重复导入时视为更新
     const ref = { id: editId };
     const c = await this.compile(code, ref);
-    const id = ref.id = editId || 'u:' + (c.kind === 'musicfree' ? 'mf-' + c.name : (c.id || uid()));
+    const id = ref.id = editId || this.newId(c, url);
     const entry = { id, code, kind: c.kind, name: c.name, url: url || this.entries.find(e => e.id === id)?.url };
     const i = this.entries.findIndex(e => e.id === id);
     i >= 0 ? this.entries.splice(i, 1, entry) : this.entries.push(entry);
@@ -85,6 +85,15 @@ export class SourceManager {
     this.runtime.set(id, { ...c, id });
     this.save();
     return { id, adapter: this.runtime.get(id), updated: i >= 0 };
+  }
+
+  // 新音源的 id。同名 MusicFree 插件按 MusicFree 的规矩视为同一个（重复导入就是更新），
+  // 但来自不同网址的同名插件（比如订阅里好几个都叫「酷狗」）各自保留，不互相覆盖
+  newId(c, url) {
+    const base = 'u:' + (c.kind === 'musicfree' ? 'mf-' + c.name : (c.id || uid()));
+    const same = this.entries.find(e => e.id === base);
+    if (!url || !same || !same.url || same.url === url) return base;
+    return this.entries.find(e => e.url === url)?.id || base + '@' + shortHash(url);
   }
 
   remove(id) {
@@ -99,7 +108,18 @@ export class SourceManager {
   setEnabled(id, on) { on ? this.disabled.delete(id) : this.disabled.add(id); this.save(); }
   setVars(id, v) { this.vars[id] = v; this.save(); }
   get(id) { return this.runtime.get(id); }
-  name(id) { return this.runtime.get(id)?.name || id; }
+  // 显示名。labels 可以给特定音源起名（内置音源用）；重名时在后面加上插件文件名或版本区分
+  name(id) {
+    const r = this.runtime.get(id);
+    if (!r) return id;
+    const own = this.labels?.get(id);
+    if (own) return own;
+    const twin = [...this.runtime].some(([k, v]) => k !== id && !v.error && !this.labels?.has(k) && v.name === r.name);
+    if (!twin) return r.name;
+    const url = this.entries.find(e => e.id === id)?.url || '';
+    const file = decodeURIComponent(url.split(/[?#]/)[0].split('/').pop() || '').replace(/\.js$/i, '');
+    return `${r.name} · ${file || (r.version ? 'v' + r.version : id.slice(-4))}`;
+  }
   isOn(id) { const r = this.runtime.get(id); return !!r && !r.error && !this.disabled.has(id); }
   enabled() { return [...this.runtime.keys()].filter(id => this.isOn(id)); }
   searchable() { return this.enabled().filter(id => this.runtime.get(id).canSearch); }
@@ -176,6 +196,11 @@ export class SourceManager {
     if (!this.isOn(track.sourceId)) tried.unshift(`${this.name(track.sourceId)}：音源已停用或不存在`);
 
     if (failover) {
+      // 先试搜索时合并进来的其他来源（同一首歌在别的音源里的那条），比重新搜索快也更准
+      for (const alt of track.alts || []) {
+        r = (await attempt(alt.sourceId, alt)) || (alt.lxKey && alt.lxKey !== track.lxKey ? await viaLx(alt) : null);
+        if (r) return { ...r, switched: true };
+      }
       const kw = `${track.title} ${String(track.artist).split(/[/、,，&]/)[0]}`.trim();
       for (const id of this.byHealth(this.searchable().filter(id => id !== track.sourceId))) {
         let list;
@@ -251,4 +276,10 @@ export class SourceManager {
     }
     return { lrc: '' };
   }
+}
+
+function shortHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = (h * 33 + str.charCodeAt(i)) >>> 0;
+  return h.toString(36);
 }

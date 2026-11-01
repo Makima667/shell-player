@@ -9,6 +9,8 @@ import { demoSource, DEMO_SONGS } from './sources/demo.js';
 import { localSource } from './sources/local.js';
 import { LX_NAMES } from './sources/platforms.js';
 import { seedBundledSources, rememberBundledRemoved } from './sources/bundled/seed.js';
+import { BUNDLED_SOURCES, bundledId } from './sources/bundled/index.js';
+import { mergeInto } from './core/match.js';
 import { TEMPLATES, DOC_HTML } from './ui/docs.js';
 import { extractColors, Visualizer } from './ui/fx.js';
 import { enableRipple, burst, flyCover, Spinner, moveIndicator, fadeVolume } from './ui/anim.js';
@@ -59,7 +61,7 @@ const S = {
   cur: store.get('cur', -1),
   mode: store.get('mode', 'loop'),
   settings: Object.assign({
-    quality: '320k', dlQuality: 'same', failover: true, skipOnError: true, theme: 'system', motion: true, fade: true,
+    quality: '320k', dlQuality: 'same', failover: true, mergeResults: true, skipOnError: true, theme: 'system', motion: true, fade: true,
     lyricTrans: true, lyricSize: 'm', dlyric: false, dlyricLock: false, dlyricSize: 34, dlyricColor: 'cover', closeToTray: true,
     autoUpdateSources: true, autoCheckUpdate: true, localMinDur: 30,
     mlyric: false, mlyricLock: false, mlyricSize: 17, tickerLyric: true, globalKeys: true
@@ -77,7 +79,8 @@ const S = {
 };
 const keyOf = t => t ? t.sourceId + '::' + t.id : '';
 // 保存时去掉歌词正文和内嵌封面（本地歌曲的封面是现读的 data URL，体积大）
-const lean = t => { const { lyric, ...rest } = t; if (String(rest.cover || '').startsWith('data:')) delete rest.cover; return rest; };
+// 存盘用：去掉歌词全文、内嵌封面和搜索时合并进来的其他来源（alts 只在本次运行里用于换源，存下来太占地方）
+const lean = t => { const { lyric, alts, ...rest } = t; if (String(rest.cover || '').startsWith('data:')) delete rest.cover; return rest; };
 const saveQueue = () => { store.set('queue', S.queue.map(lean)); store.set('cur', S.cur); };
 const savePlaylists = () => store.set('playlists', S.playlists);
 const saveSettings = () => store.set('settings', S.settings);
@@ -177,6 +180,13 @@ async function applyColors(t) {
 }
 
 /* ================= 歌曲列表 ================= */
+// 音源标签。合并过的歌显示「主来源 +N」，悬停能看到全部来源
+function srcChip(t) {
+  const n = t.alts?.length || 0;
+  const name = sources.name(t.sourceId);
+  const tip = n ? '这首歌在这些音源里都有：' + [t, ...t.alts].map(x => sources.name(x.sourceId)).join('、') : name;
+  return `<span class="chip chip-cell${t.sourceId === 'demo' ? ' accent' : ''}" title="${esc(tip)}"><span>${esc(name)}</span>${n ? `<b>+${n}</b>` : ''}</span>`;
+}
 function rowHTML(t, i, ctx) {
   const playing = keyOf(t) === keyOf(curTrack());
   const failed = S.failed.has(keyOf(t));
@@ -186,9 +196,9 @@ function rowHTML(t, i, ctx) {
     : `<button class="icon-btn" data-act="more" aria-label="更多操作" title="更多">${IC.more}</button>`;
   return `<div class="trk${playing ? ' playing' : ''}${failed ? ' failed' : ''}" data-i="${i}" style="--i:${i}">
     <span class="idx mono">${playing ? '<span class="eq"><i></i><i></i><i></i></span>' : i + 1}</span>${coverHTML(t)}
-    <div class="t-main"><div class="t-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="t-sub">${esc(t.artist)}${t.lxKey ? ` · ${esc(LX_NAMES[t.lxKey] || t.lxKey)}` : ''}</div></div>
+    <div class="t-main"><div class="t-title" title="${esc(t.title)}">${esc(t.title)}</div><div class="t-sub">${esc(t.artist)}${t.lxKey ? ` · ${esc(LX_NAMES[t.lxKey] || t.lxKey)}` : ''}${t.alts?.length ? `<span class="t-alts"> · ${t.alts.length + 1} 个音源</span>` : ''}</div></div>
     <div class="t-album" title="${esc(t.album)}">${esc(t.album)}</div>
-    <span class="chip chip-cell${t.sourceId === 'demo' ? ' accent' : ''}" title="${esc(sources.name(t.sourceId))}">${esc(sources.name(t.sourceId))}</span>
+    ${srcChip(t)}
     <span class="t-dur mono">${fmt(t.duration)}</span>
     <div class="t-act"><button class="icon-btn heart${liked ? ' on' : ''}" data-act="like" aria-label="${liked ? '取消喜欢' : '喜欢'}" title="喜欢">${IC.heart}</button>${extra}<span class="sel-box" aria-hidden="true"></span></div>
   </div>`;
@@ -772,7 +782,7 @@ async function doSearch(more = false) {
   if (!ids.length) { S.results = []; S.hasMore = false; renderResults(); return; }
   S.searching = true;
   const pending = new Set(ids), errors = [];
-  if (!more) { S.results = []; renderResults({ loading: true }); }
+  if (!more) { S.results = []; S.resIndex = new Map(); renderResults({ loading: true }); }
   else $('#moreBtn')?.setAttribute('disabled', '');
   // 每个音源返回就立刻显示，不等最慢的那个
   const r = await sources.search(ids, S.kw, S.page, {
@@ -780,13 +790,26 @@ async function doSearch(more = false) {
       if (my !== searchToken) return;
       pending.delete(p.id);
       if (p.error) { errors.push([p.id, p.error]); return renderResultsMeta(errors, pending); }
-      const seen = new Set(S.results.map(keyOf));
-      const add = p.list.filter(t => !seen.has(keyOf(t)));
-      if (!add.length) return renderResultsMeta(errors, pending);
+      const seen = new Set(S.results.flatMap(t => [keyOf(t), ...(t.alts || []).map(keyOf)]));
+      const fresh = p.list.filter(t => !seen.has(keyOf(t)));
+      if (!fresh.length) return renderResultsMeta(errors, pending);
       const start = S.results.length;
-      S.results = S.results.concat(add);
+      let add = fresh, touched = [];
+      if (S.settings.mergeResults) ({ added: add, touched } = mergeInto(S.results, fresh, S.resIndex || (S.resIndex = new Map())));
+      else S.results = S.results.concat(fresh);
       if (!$('#results .tracks')) renderResults({ errors, pending });
-      else { $('#results .tracks .rows').insertAdjacentHTML('beforeend', add.map((t, k) => rowHTML(t, start + k, 'r').replace(/style="--i:\d+"/, `style="--i:${k}"`)).join('')); renderResultsMeta(errors, pending); }
+      else {
+        if (add.length) $('#results .tracks .rows').insertAdjacentHTML('beforeend', add.map((t, k) => rowHTML(t, start + k, 'r').replace(/style="--i:\d+"/, `style="--i:${k}"`)).join(''));
+        // 多了来源的行只换标签，不重画整行（避免动画重播）
+        for (const i of touched) {
+          const row = $(`#results .trk[data-i="${i}"]`);
+          if (!row) continue;
+          row.querySelector('.chip-cell')?.replaceWith(document.createRange().createContextualFragment(srcChip(S.results[i])));
+          const sub = row.querySelector('.t-sub');
+          if (sub) { sub.querySelector('.t-alts')?.remove(); sub.insertAdjacentHTML('beforeend', `<span class="t-alts"> · ${S.results[i].alts.length + 1} 个音源</span>`); }
+        }
+        renderResultsMeta(errors, pending);
+      }
     }
   });
   if (my !== searchToken) return;
@@ -817,7 +840,13 @@ function renderResults(state = {}) {
 // 只更新结果数量、失败提示、"还在等哪些音源"和"加载更多"，不重画列表
 function renderResultsMeta(errors, pending) {
   const err = $('#resErr');
-  if (err) err.innerHTML = errors.map(([id, msg]) => `<div class="note small"><b>${esc(sources.name(id))}</b> 搜索失败：<span class="muted">${esc(msg)}</span></div>`).join('');
+  if (err) {
+    const lines = errors.map(([id, msg]) => `<div><b>${esc(sources.name(id))}</b> 搜索失败：<span class="muted">${esc(msg)}</span></div>`).join('');
+    // 音源多了以后失败提示会刷屏，超过两个就收起来
+    const open = err.querySelector('details')?.open;
+    err.innerHTML = !errors.length ? '' : errors.length <= 2 ? `<div class="note small">${lines}</div>`
+      : `<details class="note small res-errs"${open ? ' open' : ''}><summary>${errors.length} 个音源这次没搜到结果<span class="muted">（点开看原因）</span></summary>${lines}</details>`;
+  }
   const c = $('#resCount');
   if (c) c.innerHTML = `${S.results.length} 首${S.kw ? `，关键词「${esc(S.kw)}」` : ''}` + (pending.size ? ` <span class="waiting"><i></i><i></i><i></i> 还在等 ${[...pending].map(id => esc(sources.name(id))).join('、')}</span>` : '');
   const m = $('#resMore');
@@ -915,9 +944,9 @@ function renderSources() {
     const h = !r.builtin && sources.health(id);
     const healthChip = h ? `<span class="chip ${h.rate >= 0.8 ? 'ok' : h.rate < 0.5 ? 'err' : ''}" title="最近 ${h.n} 次请求">成功率 ${Math.round(h.rate * 100)}%${h.ms ? ` · ${(h.ms / 1000).toFixed(1)} 秒` : ''}</span>` : '';
     return `<div class="src${on ? '' : ' off'}" data-id="${esc(id)}" style="--i:${i}">
-      <div class="src-head"><div class="grow"><div class="src-name">${esc(r.name)}</div>
+      <div class="src-head"><div class="grow"><div class="src-name">${esc(sources.name(id))}</div>
         <div class="row small" style="margin-top:6px"><span class="chip${r.kind === 'builtin' ? ' accent' : ''}">${KIND[r.kind] || r.kind}</span>${r.version ? `<span class="chip mono">v${esc(r.version)}</span>` : ''}${r.error ? '<span class="chip err">加载失败</span>' : caps ? `<span class="chip">${caps}</span>` : ''}${healthChip}</div></div>
-        <label class="switch" title="${on ? '停用' : '启用'}"><input type="checkbox" data-sa="toggle" ${on ? 'checked' : ''} ${r.error ? 'disabled' : ''} aria-label="启用 ${esc(r.name)}"><span></span></label></div>
+        <label class="switch" title="${on ? '停用' : '启用'}"><input type="checkbox" data-sa="toggle" ${on ? 'checked' : ''} ${r.error ? 'disabled' : ''} aria-label="启用 ${esc(sources.name(id))}"><span></span></label></div>
       <div class="src-desc">${r.error ? `<span style="color:var(--danger)">${esc(r.error)}</span>` : esc(r.description || '没有描述')}${r.author ? `<br>作者：${esc(r.author)}` : ''}</div>
       ${checkHTML(id)}
       ${extra ? `<div class="row">${extra}</div>` : ''}</div>`;
@@ -999,14 +1028,23 @@ async function checkSources(btn) {
     } catch (e) { return finish(id, false, '搜索失败：' + shortErr(e)); }
     if (!list.length) return finish(id, false, `搜「${KW}」没有结果`);
     samples.push(...list.slice(0, 3));
-    if (!src.canUrl) return finish(id, true, `能搜索（${list.length} 首），播放地址要靠洛雪源或其他音源`);
     setCheck(id, { state: 'run', text: `搜到 ${list.length} 首，正在试播…` });
-    let lastErr;
-    for (const t of list.slice(0, 2)) {
+    let lastErr = src.canUrl ? null : new Error('它自己不提供播放地址');
+    if (src.canUrl) {
+      for (const t of list.slice(0, 2)) {
+        try {
+          const r = await tryUrl(id, t);
+          return finish(id, true, `能搜能播：搜到 ${list.length} 首，《${t.title}》${r.quality ? ' · ' + r.quality : ''}`);
+        } catch (e) { lastErr = e; }
+      }
+    }
+    // 自己取不到地址时，真正播放会交给支持这个平台的洛雪源，这里也照着试一次
+    const t = list[0];
+    for (const lx of sources.lxProviders(t.lxKey || '').slice(0, 2)) {
       try {
-        const r = await tryUrl(id, t);
-        return finish(id, true, `能搜能播：搜到 ${list.length} 首，《${t.title}》${r.quality ? ' · ' + r.quality : ''}`);
-      } catch (e) { lastErr = e; }
+        const r = await tryUrl(lx, t);
+        return finish(id, true, `能搜索（${list.length} 首），播放靠「${sources.name(lx)}」接上${r.quality ? ' · ' + r.quality : ''}`);
+      } catch { /* 换下一个 */ }
     }
     finish(id, false, `能搜索（${list.length} 首），但播不了：${shortErr(lastErr)}`);
   });
@@ -1031,6 +1069,16 @@ async function checkSources(btn) {
   });
   btn.disabled = false;
   btn.textContent = '一键体检';
+  const bad = ids.filter(id => srcCheck.get(id)?.ok === false && sources.isOn(id));
+  const off = $('#disableBad');
+  off.hidden = !bad.length;
+  off.textContent = `停用 ${bad.length} 个不能用的`;
+  off.onclick = () => {
+    bad.forEach(id => sources.setEnabled(id, false));
+    off.hidden = true;
+    renderSources();
+    toast(`已停用 ${bad.length} 个音源，需要时在卡片上重新打开`, 4000);
+  };
   toast(`体检完成：${good} 个能用，${ids.length - good} 个有问题或没法单独测`, 5000);
 }
 $('#checkAll').addEventListener('click', e => checkSources(e.currentTarget));
@@ -1267,6 +1315,7 @@ function renderSettings() {
     row('首选音质', '音源不支持时会自动降级', seg('quality', QUALITIES)),
     row('下载音质', '下载时用的音质', seg('dlQuality', [['same', '同上'], ...QUALITIES])),
     row('失败自动换源', '取不到播放地址时，去其他音源搜同名同歌手的歌', sw('failover')),
+    row('合并重复歌曲', '不同音源搜到的同一首歌只显示一行，播放失败时先换它的其他来源', sw('mergeResults')),
     row('出错时跳到下一首', '连续失败超过 5 首会停下', sw('skipOnError')),
     row('外观', '深色、浅色或跟随系统', seg('theme', [['system', '跟随系统'], ['light', '浅色'], ['dark', '深色']])),
     row('动态效果', '封面取色的流动背景、律动条、转场和粒子动画', sw('motion')),
@@ -2000,6 +2049,7 @@ async function boot() {
     store, builtins, env: isMobile() ? 'mobile' : 'desktop',
     onUpdateAlert: (id, d) => toast(`「${sources.name(id)}」有新版本${d.log ? '：\n' + String(d.log).slice(0, 120) : ''}`, 6000)
   });
+  sources.labels = new Map(BUNDLED_SOURCES.map(i => [bundledId(i), i.name]));
   // 首次启动就把内置音源装好，省掉"装完了还得自己找音源"这一步
   await seedBundledSources(sources, { store }).catch(err => console.warn('内置音源加载失败', err));
   await sources.loadAll();

@@ -4,7 +4,7 @@ import { setFetch } from '../src/core/http.js';
 import { compileSource, SubscriptionError, detectKind } from '../src/sources/compile.js';
 import { SourceManager } from '../src/sources/manager.js';
 import { parseLrc, mergeTranslation, lineAt } from '../src/core/lrc.js';
-import { matchScore } from '../src/core/match.js';
+import { matchScore, mergeInto } from '../src/core/match.js';
 
 // 假的网络：按 URL 返回固定数据，并记录请求
 const calls = [];
@@ -226,7 +226,7 @@ test('专用线路列表给出明确提示', async () => {
   }
 });
 
-test('插件请求默认带浏览器 UA、去掉 Origin，插件自己写的请求头不覆盖', async () => {
+test('插件请求默认带 okhttp UA、去掉 Origin，插件自己写的请求头不覆盖', async () => {
   const { nativeLikeFetch, PLUGIN_UA } = await import('../src/core/http.js');
   const seen = [];
   const f = nativeLikeFetch(async (url, init) => { seen.push(init.headers); return new Response('{}'); });
@@ -240,4 +240,59 @@ test('插件请求默认带浏览器 UA、去掉 Origin，插件自己写的请�
   const g = nativeLikeFetch(async (url, init) => { seen.push(init.headers); return new Response('{}'); }, { dropOrigin: false });
   await g('https://a.test/');
   assert.equal(seen[2].has('origin'), false);
+});
+
+test('订阅里同名的插件各自保留，同一个网址再导入才算更新；重名时显示名带上文件名', async () => {
+  const sm = new SourceManager({ store: memStore(), builtins: [] });
+  const a = await sm.add(MF_PLUGIN, { url: 'https://sub.test/plugins/qq-a.js' });
+  const b = await sm.add(MF_PLUGIN.replace("version: '0.1.0'", "version: '0.2.0'"), { url: 'https://sub.test/plugins/qq-b.js' });
+  assert.notEqual(a.id, b.id);
+  assert.equal(sm.entries.length, 2);
+  const again = await sm.add(MF_PLUGIN, { url: 'https://sub.test/plugins/qq-b.js' });
+  assert.equal(again.id, b.id);
+  assert.equal(again.updated, true);
+  assert.equal(sm.entries.length, 2);
+  // 手动粘贴（没有网址）的同名插件仍按 MusicFree 的规矩覆盖同名的那个
+  const pasted = await sm.add(MF_PLUGIN);
+  assert.equal(pasted.id, a.id);
+  assert.equal(sm.entries.length, 2);
+  assert.equal(sm.name(a.id), 'QQ音乐 · qq-a');
+  assert.equal(sm.name(b.id), 'QQ音乐 · qq-b');
+  sm.labels = new Map([[a.id, '我的 QQ']]);
+  assert.equal(sm.name(a.id), '我的 QQ');
+  assert.equal(sm.name(b.id), 'QQ音乐');
+});
+
+test('搜索结果合并：不同音源的同一首歌并成一行，现场版和时长差很多的不合并', () => {
+  const results = [], index = new Map();
+  mergeInto(results, [
+    { sourceId: 'A', id: '1', title: '晴天', artist: '周杰伦', duration: 269 },
+    { sourceId: 'A', id: '2', title: '晴天 (Live)', artist: '周杰伦', duration: 300 },
+    { sourceId: 'A', id: '3', title: '晴天', artist: '周杰伦', duration: 270 }
+  ], index);
+  assert.equal(results.length, 3, '同一个音源自己的多条结果不合并');
+  const r = mergeInto(results, [
+    { sourceId: 'B', id: '9', title: '晴天', artist: '周杰伦/五月天', duration: 270 },
+    { sourceId: 'B', id: '8', title: '晴天（Live）', artist: '周杰伦', duration: 301 },
+    { sourceId: 'B', id: '7', title: '晴天', artist: '周杰伦', duration: 200 },
+    { sourceId: 'B', id: '6', title: '晴天', artist: '周杰伦', duration: 269 }
+  ], index);
+  assert.deepEqual(results[0].alts.map(t => t.id), ['9']);
+  assert.deepEqual(results[1].alts.map(t => t.id), ['8']);
+  assert.deepEqual(results[2].alts.map(t => t.id), ['6'], 'B 的第二条「晴天」挂到 A 的另一条上');
+  assert.deepEqual(r.added.map(t => t.id), ['7']);
+  assert.deepEqual(r.touched.sort(), [0, 1, 2]);
+});
+
+test('合并进来的其他来源：主来源取不到地址时先换它们，关掉自动换源就不换', async () => {
+  const bad = { name: 'A', canSearch: true, canUrl: true, search: async () => ({ list: [] }), getUrl: async () => { throw new Error('没有版权'); } };
+  const good = { name: 'B', canSearch: true, canUrl: true, search: async () => ({ list: [] }), getUrl: async t => ({ url: 'https://b.test/' + t.id }) };
+  const sm = new SourceManager({ store: memStore(), builtins: [['a', bad], ['b', good]] });
+  await sm.loadAll();
+  const t = { sourceId: 'a', id: '1', title: '晴天', artist: '周杰伦', alts: [{ sourceId: 'b', id: '9', title: '晴天', artist: '周杰伦' }] };
+  const r = await sm.resolveUrl(t, '320k');
+  assert.equal(r.via, 'b');
+  assert.equal(r.switched, true);
+  assert.equal(r.url, 'https://b.test/9');
+  await assert.rejects(sm.resolveUrl(t, '320k', { failover: false }));
 });
