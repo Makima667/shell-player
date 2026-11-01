@@ -64,7 +64,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE2Q0QwNDY1QjY1MkZGNTIKUldSUy8xSzJaUVROcHU0eUx5UTdFbUIzWlBQSWVrNXdLQUFTUnpnVURUNWU5clJrRDFRTkUvd2IK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDA3MkI3NjU4RERCNjZCQkEKUldTNmE3YmRXSFlyQnpOTGhncVpMS1BkbVo0dFVkdFlERzhMSzUvK29JNjBZQWZMTzJ1NkkrdFUK",
       "endpoints": [
         "https://github.com/Makima667/shell-player/releases/latest/download/latest.json"
       ],
